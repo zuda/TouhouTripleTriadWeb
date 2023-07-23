@@ -1,0 +1,163 @@
+import { eventManager } from '../core/event_manager';
+import { gfx2Manager } from '../gfx2/gfx2_manager';
+import { Gfx2Drawable } from '../gfx2/gfx2_drawable';
+
+interface JASFrame {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface JASAnimation {
+  name: string;
+  frames: Array<JASFrame>;
+  frameDuration: number;
+}
+
+class Gfx2SpriteJAS extends Gfx2Drawable {
+  flip: [boolean, boolean];
+  animations: Array<JASAnimation>;
+  texture: ImageBitmap | HTMLImageElement;
+  currentAnimation: JASAnimation | null;
+  currentAnimationFrameIndex: number;
+  isLooped: boolean;
+  frameProgress: number;
+
+  constructor() {
+    super();
+    this.flip = [false, false];
+    this.animations = [];
+    this.texture = gfx2Manager.getDefaultTexture();
+    this.currentAnimation = null;
+    this.currentAnimationFrameIndex = 0;
+    this.isLooped = false;    
+    this.frameProgress = 0;
+  }
+
+  update(ts: number): void {
+    if (!this.currentAnimation) {
+      return;
+    }
+
+    if (this.frameProgress >= this.currentAnimation.frameDuration) {
+      if (this.currentAnimationFrameIndex == this.currentAnimation.frames.length - 1) {
+        eventManager.emit(this, 'E_FINISHED');
+        this.currentAnimationFrameIndex = this.isLooped ? 0 : this.currentAnimation.frames.length - 1;
+        this.frameProgress = 0;
+      }
+      else {
+        this.currentAnimationFrameIndex = this.currentAnimationFrameIndex + 1;
+        this.frameProgress = 0;
+      }
+    }
+    else {
+      this.frameProgress += ts;
+    }
+  }
+
+  paint(): void {
+    if (!this.currentAnimation) {
+      return;
+    }
+
+    const ctx = gfx2Manager.getContext();
+    const currentFrame = this.currentAnimation.frames[this.currentAnimationFrameIndex];
+
+    ctx.scale(this.flip[0] ? -1 : 1, this.flip[1] ? -1 : 1);
+    ctx.drawImage(
+      this.texture,
+      currentFrame.x,
+      currentFrame.y,
+      currentFrame.width,
+      currentFrame.height,
+      this.flip[0] ? currentFrame.width * -1 : 0,
+      this.flip[1] ? currentFrame.height * -1 : 0,
+      currentFrame.width,
+      currentFrame.height
+    );
+  }
+
+  play(animationName: string, isLooped: boolean = false, preventSameAnimation: boolean = false): void {
+    if (preventSameAnimation && this.currentAnimation && animationName == this.currentAnimation.name) {
+      return;
+    }
+
+    const animation = this.animations.find(animation => animation.name == animationName);
+    if (!animation) {
+      throw new Error('Gfx2SpriteJAS::play: animation not found.');
+    }
+
+    this.currentAnimation = animation;
+    this.currentAnimationFrameIndex = 0;
+    this.isLooped = isLooped;
+    this.frameProgress = 0;
+  }
+
+  async loadFromFile(path: string): Promise<void> {
+    const response = await fetch(path);
+    const json = await response.json();
+
+    this.animations = [];
+    for (const obj of json['Animations']) {
+      const animation: JASAnimation = {
+        name: obj['Name'],
+        frames: [],
+        frameDuration: parseInt(obj['FrameDuration'])
+      };
+
+      for (const objFrame of obj['Frames']) {
+        animation.frames.push({
+          x: objFrame['X'],
+          y: objFrame['Y'],
+          width: objFrame['Width'],
+          height: objFrame['Height']
+        });
+      }
+
+      this.animations.push(animation);
+    }
+
+    this.currentAnimation = null;
+    this.currentAnimationFrameIndex = 0;
+    this.frameProgress = 0;
+  }
+
+  getFlip(): [boolean, boolean] {
+    return this.flip;
+  }
+
+  setFlipX(x: boolean): void {
+    this.flip[0] = x;
+  }
+
+  setFlipY(y: boolean): void {
+    this.flip[1] = y;
+  }
+
+  getAnimations(): Array<JASAnimation> {
+    return this.animations;
+  }
+
+  setAnimations(animations: Array<JASAnimation>): void {
+    this.animations = animations;
+  }
+
+  getCurrentAnimation(): JASAnimation | null {
+    return this.currentAnimation;
+  }
+
+  getCurrentAnimationFrameIndex(): number {
+    return this.currentAnimationFrameIndex;
+  }
+
+  getTexture(): ImageBitmap | HTMLImageElement {
+    return this.texture;
+  }
+
+  setTexture(texture: ImageBitmap): void {
+    this.texture = texture;
+  }
+}
+
+export { Gfx2SpriteJAS };

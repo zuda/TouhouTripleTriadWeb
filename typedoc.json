@@ -1,0 +1,6 @@
+{
+  "entryPointStrategy": "expand",
+  "entryPoints": [
+  ],
+  "out": "docs"
+}
