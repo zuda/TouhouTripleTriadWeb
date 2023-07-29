@@ -8,13 +8,15 @@ class UICardHand extends UIWidget {
     super({
       className: 'UICardHand',
       template: `
-      <img class="UICardHand-picture js-background" style="position: absolute; left:0px; top:0px;">
-      <img class="UICardHand-picture js-picture" style="position: absolute; left:0px; top:0px;">
-      <img class="UICardHand-picture js-border" style="position: absolute; left:0px; top:0px;">
-      <div class="UICardHand-points js-top" style="left:15px; top:0px; background-color: transparent; font-size: 16px; -webkit-text-stroke: 1px black;"></div>
-      <div class="UICardHand-points js-right" style="left:30px; top:20px; background-color: transparent; font-size: 16px; -webkit-text-stroke: 1px black"></div>
-      <div class="UICardHand-points js-left" style="left:0px; top:20px; background-color: transparent; font-size: 16px; -webkit-text-stroke: 1px black"></div>
-      <div class="UICardHand-points js-bottom" style="left:15px; top:40px; background-color: transparent; font-size: 16px; -webkit-text-stroke: 1px black"></div>
+      <img class="UICardHand-picture js-background"/>
+      <img class="UICardHand-picture js-picture"/>
+      <img class="UICardHand-picture js-border"/>
+      <div class="UICardHand-points">
+        <div class="UICardHand-points-t js-top"></div>
+        <div class="UICardHand-points-r js-right"></div>
+        <div class="UICardHand-points-l js-left"></div>
+        <div class="UICardHand-points-b js-bottom"></div>
+      </div>
       `
     });
     this.node.querySelector('.js-border').src = path_card + 'card.png';

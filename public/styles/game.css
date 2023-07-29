@@ -11,6 +11,62 @@
   font-family: "Press Start 2P";
 }
 
+.UICardHand {
+  position: absolute;
+}
+
+.UICardHand-picture {
+  position: absolute;
+  top:0;
+  left:0;
+  right: 0;
+  bottom:0;
+  object-fit: cover;
+  width: 100%;
+  max-width: 100%;
+}
+
+.UICardHand-points {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 45px;
+  height: 55px;
+  font-size: 12px;
+}
+
+.UICardHand-points-t {
+  position:absolute;
+  top:0;
+  left:50%;
+  translate: -50% 0;
+  text-shadow: 1px 1px 2px black;
+}
+
+.UICardHand-points-l {
+  position:absolute;
+  top:50%;
+  left:0;
+  translate: 0 -50%;
+  text-shadow: 1px 1px 2px black;
+}
+
+.UICardHand-points-r {
+  position:absolute;
+  top:50%;
+  right:0;
+  translate: 0 -50%;
+  text-shadow: 1px 1px 2px black;
+}
+
+.UICardHand-points-b {
+  position:absolute;
+  bottom:0;
+  left:50%;
+  translate: -50% 0;
+  text-shadow: 1px 1px 2px black;
+}
+
 /*---------------------------------------------------------------------------------------------*/
 /* UI AVATAR
 /*---------------------------------------------------------------------------------------------*/

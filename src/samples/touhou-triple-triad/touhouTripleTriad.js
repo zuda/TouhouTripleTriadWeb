@@ -22,7 +22,7 @@ class TouhouTripleTriadScreen extends Screen {
       this.card[i].setCharacter(name[i]);
       this.card[i].setPoints(1, 5, 8, 4);
       this.card[i].setPlayerOwner(true);
-      this.addCard(this.card[i], i*70, 30, 5)
+      this.addCard(this.card[i], i*70, 30, 20)
     }
     for (let i = 0; i < 8; i++) {
       this.card[i+8] = new UICardHand();
