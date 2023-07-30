@@ -99,6 +99,7 @@ class BootScreen extends Screen {
     else if (data.id == 14)
     {
       screenManager.requestSetScreen(new TouhouTripleTriadScreen());
+      let a = 2+1;
     }
   }
 }

@@ -3,12 +3,15 @@ import { uiManager } from '../../lib/ui/ui_manager';
 import { Screen } from '../../lib/screen/screen';
 import { UIMenuText } from '../../lib/ui_menu_text/ui_menu_text';
 import { UIText } from '../../lib/ui_text/ui_text';
+import { CoreManager } from '../../lib/core/core_manager';
+import { coreManager } from '../../lib/core/core_manager';
 import { UICardHand } from './ui/ui_card_hand';
 // ---------------------------------------------------------------------------------------
 
 class TouhouTripleTriadScreen extends Screen {
   constructor() {
     super();
+    coreManager.setSize(720, 1020, SizeModeEnum.FIT);
     this.card = [];
     const name = ["Alice","Patchouli","Cirno", "Reimu", "Sakuya", "Remilia", "Meiling", "Reisen"];
     const name2 = ["Mokou","Iku", "Kisume", "Kogasa", "Komachi", "Marisa", "Konngara", "Momiji"];
