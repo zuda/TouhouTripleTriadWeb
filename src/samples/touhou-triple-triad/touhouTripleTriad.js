@@ -4,7 +4,7 @@ import { Screen } from '../../lib/screen/screen';
 import { UIMenuText } from '../../lib/ui_menu_text/ui_menu_text';
 import { UIText } from '../../lib/ui_text/ui_text';
 import { CoreManager } from '../../lib/core/core_manager';
-import { coreManager } from '../../lib/core/core_manager';
+import { coreManager, SizeMode } from '../../lib/core/core_manager';
 import { UICardHand } from './ui/ui_card_hand';
 // ---------------------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ class TouhouTripleTriadScreen extends Screen {
     } 
     
 
-    coreManager.setSize(720, 1020, 0);
+    coreManager.setSize(1020, 720, SizeMode.FIT);
     
     // uiManager.addWidget(this.card[1], 'position: absolute; top: 200px; left: 30px; width: 20%;');
   }
