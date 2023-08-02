@@ -24,8 +24,10 @@ class CoreManager {
   }
 
   setSize(resWidth: number, resHeight: number, sizeMode = SizeModeEnum.FIT): void {
-    this.container.style.width = this.resWidth + 'px';
-    this.container.style.height = this.resHeight + 'px';
+    this.container.style.width = resWidth + 'px';
+    this.container.style.height = resHeight + 'px';
+
+    console.log('size changed', this.resWidth);
 
     if (this.sizeMode == SizeModeEnum.FIT) {
       this.container.style.transform = 'scale(' + window.innerWidth / resWidth + ',' + window.innerHeight / resHeight + ')';

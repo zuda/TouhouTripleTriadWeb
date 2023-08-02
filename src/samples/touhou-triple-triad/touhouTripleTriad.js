@@ -11,7 +11,7 @@ import { UICardHand } from './ui/ui_card_hand';
 class TouhouTripleTriadScreen extends Screen {
   constructor() {
     super();
-    coreManager.setSize(720, 1020, SizeModeEnum.FIT);
+    
     this.card = [];
     const name = ["Alice","Patchouli","Cirno", "Reimu", "Sakuya", "Remilia", "Meiling", "Reisen"];
     const name2 = ["Mokou","Iku", "Kisume", "Kogasa", "Komachi", "Marisa", "Konngara", "Momiji"];
@@ -35,6 +35,8 @@ class TouhouTripleTriadScreen extends Screen {
       this.addCard(this.card[i+8], i*70, 450, 20)
     } 
     
+
+    coreManager.setSize(720, 1020, 0);
     
     // uiManager.addWidget(this.card[1], 'position: absolute; top: 200px; left: 30px; width: 20%;');
   }
