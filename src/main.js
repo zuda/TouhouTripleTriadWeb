@@ -42,10 +42,7 @@ class GameManager {
     gfx3SpriteRenderer.render();
     gfx3ParticlesRenderer.render();
     gfx3Manager.endRender();
-
-    document.getElementById('time').innerHTML = parseInt(gfx3Manager.getLastRenderTime());
-    document.getElementById('fps').innerHTML = (1000 / (gfx3Manager.getLastRenderTime())).toFixed(2);
-
+    
     requestAnimationFrame(timeStamp => this.run(timeStamp));
   }
 }

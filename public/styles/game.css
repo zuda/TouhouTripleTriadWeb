@@ -11,6 +11,21 @@
   font-family: "Press Start 2P";
 }
 
+.UIDamier {
+  position: absolute;
+}
+
+.UIDamier-picture {
+  position: absolute;
+  top:0;
+  left:0;
+  right: 0;
+  bottom:0;
+  object-fit: cover;
+  width: 100%;
+  max-width: 100%;
+}
+
 .UICardHand {
   position: absolute;
 }
