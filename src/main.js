@@ -8,9 +8,8 @@ import { gfx2Manager } from './lib/gfx2/gfx2_manager';
 import { screenManager } from './lib/screen/screen_manager';
 import { uiManager } from './lib/ui/ui_manager';
 // ---------------------------------------------------------------------------------------
-import { TouhouTripleTriadScreen } from "./samples/touhou-triple-triad/touhouTripleTriad"
+import { BootScreen } from './samples/touhou-triple-triad/ui/ui_boot_screen';
 // ---------------------------------------------------------------------------------------
-
 class GameManager {
   constructor() {
     this.then = 0;
@@ -49,4 +48,4 @@ class GameManager {
 
 export const gameManager = new GameManager();
 gameManager.startup();
-screenManager.requestSetScreen(new TouhouTripleTriadScreen());
+screenManager.requestSetScreen(new BootScreen());

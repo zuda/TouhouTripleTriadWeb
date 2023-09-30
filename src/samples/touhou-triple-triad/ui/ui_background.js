@@ -4,9 +4,9 @@ const path_card = 'samples/touhou-triple-triad/';
 class Background extends UIWidget {
     constructor() {
         super({
-          className: 'UIDamier',
+          className: 'UIBackgroundTTT',
           template: `
-          <img class="UIDamier-picture js-background"/>
+          <img class="UIBackgroundTTT-picture js-background"/>
           `
         });
         this.node.querySelector('.js-background').src = path_card + 'background.png';

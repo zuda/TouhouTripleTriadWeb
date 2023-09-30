@@ -11,11 +11,20 @@
   font-family: "Press Start 2P";
 }
 
-.UIDamier {
+@keyframes clignoter {
+  0%, 50%, 100% {
+    opacity: 1;
+  }
+  25%, 75% {
+    opacity: 0.7;
+  }
+}
+
+.UIDamier, .UIBackgroundTTT {
   position: absolute;
 }
 
-.UIDamier-picture {
+.UIDamier-picture, .UIBackgroundTTT-picture {
   position: absolute;
   top:0;
   left:0;

@@ -1,119 +1,135 @@
 import { eventManager } from '../../lib/core/event_manager';
 import { uiManager } from '../../lib/ui/ui_manager';
 import { Screen } from '../../lib/screen/screen';
-import { UIMenuText } from '../../lib/ui_menu_text/ui_menu_text';
-import { UIText } from '../../lib/ui_text/ui_text';
-import { CoreManager } from '../../lib/core/core_manager';
 import { coreManager, SizeMode } from '../../lib/core/core_manager';
-import { UICardHand } from './ui/ui_card_hand';
 import { Background } from './ui/ui_background';
-import { UIMenu } from '../../lib/ui_menu/ui_menu';
+import { inputManager, InputManager } from '../../lib/input/input_manager';
 // ---------------------------------------------------------------------------------------
+import { UIPlayerHands } from './ui/ui_player_hand';
+import { Card } from './core/card';
+import { Direction } from './core/type.ts';
+import { UIDamier } from './ui/ui_damier';
+import { GameState } from './core/gameState';
 
-class TouhouTripleTriadScreen extends Screen {
-  constructor() {
-    super();
-    const path_card = 'samples/touhou-triple-triad/';
-    
-    this.background = new Background();
-    uiManager.addWidget(this.background, 'position: absolute; top: -100px; left: -100px; width: 130%;');
-    this.curseur = new Background();
-    this.curseur.node.querySelector('.js-background').src = path_card + 'curseur.png';
-    uiManager.addWidget(this.curseur, 'position: absolute; top: 240px; left: 240px; width: 2%;');
-    this.card = [];
-    const name = ["Alice","Patchouli","Cirno", "Reimu", "Sakuya", "Remilia", "Meiling", "Reisen"];
-    const name2 = ["Mokou","Iku", "Kisume", "Kogasa", "Komachi", "Marisa", "Konngara", "Momiji"];
-    let size_i = 175
-    let size_j = 130
-    let offset_i = 15
-    let offset_j = 475
-    let scale = 9
-    // this.card[0] = new UICardHand();
-    // this.card[0].setCharacter(name[0]);
-    // uiManager.addWidget(this.card[0], 'position: absolute; top: 0px; left: 0px; width: 30%;');
+const path_card = 'samples/touhou-triple-triad/';
 
-    // this.card[0] = new UICardHand();
-    // this.card[0].setCharacter(name[0]);
-    // this.card[0].setPoints(1, 5, 8, 4);
-    // this.card[0].setPlayerOwner(true);
-    // uiManager.addWidget(this.card[0], 'position: absolute; top: 30px; left: 30px; width: 20%;');
-    this.case = [];
-    for (let i = 0; i < 4; i++) {
-      this.case[i] = []
-      for(let j = 0; j < 4; j++) {
-        this.case[i][j] = new Background();
-        this.case[i][j].node.querySelector('.js-background').src = path_card + 'plateau.png';
-        this.addCard(this.case[i][j], i*size_i+offset_i, j*size_j + offset_j, scale)
-      }
+const FocusMode = {
+    Damier : 0,
+    Player : 1
+}
+
+const key_to_dir_dict = {
+    "LEFT": Direction.W,
+    "UP": Direction.N,
+    "RIGHT": Direction.E,
+    "DOWN": Direction.S
+};
+
+class TouhouTripleTriadScreen extends Screen 
+{
+    constructor() {
+        super();    
     }
-    
 
-    size_i = 70
-    size_j = 130
-    offset_i = 35
-    offset_j = 30
-    scale = 9
-    for (let i = 0; i < 8; i++) {
-      this.card[i] = new UICardHand();
-      this.card[i].setCharacter(name[i]);
-      this.card[i].setPoints(1, 5, 8, 4);
-      this.card[i].setPlayerOwner(true);
-      this.addCard(this.card[i], i*size_i+offset_i, offset_j, scale)
+    async onEnter()
+    {
+        this.GameState = new GameState();
+        this.background = new Background();
+        uiManager.addWidget(this.background, 'position: absolute; top: -100px; left: -100px; width: 130%;');
+
+        this.curseur = new Background();
+        this.curseur.node.querySelector('.js-background').src = path_card + 'curseur.png';
+        this.players_hand = new UIPlayerHands(this.curseur);
+
+        this.player_turn = 0;
+        this.FocusMode = FocusMode.Player;
+
+        eventManager.subscribe(inputManager, 'E_ACTION', this, this.onAction);
+        this.background.focus();
+
+        this.damier = new UIDamier(this.curseur);
+        this.initPlayersHand();
+        uiManager.addWidget(this.curseur, 'position: absolute; top: 240px; left: 240px; width: 2%;');
+        this.players_hand.selectCard(this.player_turn)
+        coreManager.setSize(1500, 730, SizeMode.FULL);
     }
-    offset_j = 1330
-    for (let i = 0; i < 8; i++) {
-      this.card[i+8] = new UICardHand();
-      this.card[i+8].setCharacter(name2[i]);
-      this.card[i+8].setPoints(1, 5, 8, 4);
-      this.card[i+8].setPlayerOwner(false);
-      this.addCard(this.card[i+8], i*size_i+offset_i, offset_j, scale)
-    } 
-    this.placeCard(this.card[3], 2, 1);
-    this.selectCard(0, 4);
-  
-    coreManager.setSize(1500, 730, SizeMode.FULL);
-    // uiManager.addWidget(this.card[1], 'position: absolute; top: 200px; left: 30px; width: 20%;');
-  }
 
-  placeCard(c, i, j){
-    let size_i = 175
-    let size_j = 130
-    let offset_i = 15
-    let offset_j = 475
-    let scale = 9
 
-    c.node.style.left = j*size_j+offset_j + 'px'
-    c.node.style.top = i*size_i+offset_i + 'px'
-  }
+    initPlayersHand(){
+        const player_cards_name = [["Alice","Patchouli","Cirno", "Reimu", "Sakuya", "Remilia", "Meiling", "Reisen"], ["Mokou","Iku", "Kisume", "Kogasa", "Komachi", "Marisa", "Konngara", "Momiji"]];
 
-  selectCard(numPlayer, i_cards){
-    let size_i = 70
-    let size_j = 130
-    let offset_i = 35
-    let offset_j = 60
-    let scale = 9
-    let offset_curseur = size_j+20
-    let c = this.card[numPlayer*8+i_cards]
-    if (numPlayer == 1){
-      offset_j = 1300 
-      offset_curseur = -40
+        for(let i = 0; i < 2; i++){
+            for(let j = 0; j < MAX_NB_CARDS; j++){
+                let card = new Card()
+                card.setPoints(Math.floor(Math.random() * 10  + 1), Math.floor(Math.random() * 10  + 1), Math.floor(Math.random() * 10  + 1), Math.floor(Math.random() * 10  + 1));
+                card.setCharacter(player_cards_name[i][j])
+                this.players_hand.addCard(i, card)
+                if( i==1 )
+                    card.setPlayerOwner(i)
+            }
+        }
+        this.players_hand.addAllWidjetCards()
     }
-    c.node.style.left = offset_j + 'px'
-    this.curseur.node.style.left = offset_j + offset_curseur + 'px' 
-    this.curseur.node.style.top = (i_cards+0.5)*size_i+offset_i + 'px' 
-    // c.node.style.top = i_cards*size_i+offset_i+offset_j + 'px' 
-  }
-  
-  addCard(c, posx, posy, percent_scale){
-    uiManager.addWidget(c, 'position: absolute; top: ' + posx + 'px; left: '  + posy + 'px; width: '  + percent_scale + '%;');
-  }
+ 
+    // addCard(c, posx, posy, percent_scale){
+    //     uiManager.addWidget(c, 'position: absolute; top: ' + posx + 'px; left: '  + posy + 'px; width: '  + percent_scale + '%;');
+    // }
 
-  
+    onAction(actionId){       
+        actionId = actionId.actionId;
+        if(this.FocusMode == FocusMode.Player){   
+            switch(actionId){ 
+                case "UP":
+                case "DOWN":
+                    this.players_hand.selectNeighbourCard(this.player_turn, actionId=="DOWN");
+                    break;
+                case "OK":
+                    this.damier.selectFirstEmptyCase()
+                    this.players_hand.stopAnimation(this.player_turn)
+                    this.FocusMode = FocusMode.Damier;
+                    break;
+                default:
+                    break;
+            }  
+        }
+        else if(this.FocusMode == FocusMode.Damier){   
+            switch(actionId){ 
+                case "UP":
+                case "RIGHT":
+                case "DOWN":
+                case "LEFT":
+                    this.damier.moveSelectedCase(key_to_dir_dict[actionId])
+                    break;
+                case "OK":
+                    if (this.damier.selectedCaseIsEmpty()){
+                        this.damier.setCardInSelectedCase(this.players_hand.getSelectedCard(this.player_turn))
+                        this.players_hand.removeCurCardAndRearrangeHand(this.player_turn)
+                        this.player_turn = (this.player_turn+1)%2
+                        this.FocusMode = FocusMode.Player;
+                        this.players_hand.i_selected = 0;
+                        this.players_hand.selectCard(this.player_turn)
+                    }
+                    break;
+                case "BACK":
+                    this.FocusMode = FocusMode.Player
+                    this.players_hand.selectCard(this.player_turn)
+                    this.damier.unselectCurrentCase()
+                default:
+                    break;
+            }  
+        }
+    }
 
-
-  onExit() {
-    uiManager.removeWidget(this.card);
-  }
+    onExit(){
+        uiManager.removeWidget(this.background);
+        uiManager.removeWidget(this.curseur);
+        this.players_hand.removeAllWidjet();
+        this.damier.removeAllWidjet()
+        for(let i = 0; i < MAX_NB_CARDS; i++)
+            uiManager.removeWidget(this.player1_hand.getCard(i).ui);
+        for(let i = 0; i < MAX_NB_CARDS; i++)
+            uiManager.removeWidget(this.player2_hand.getCard(i).ui);
+    }
 }
 
 export { TouhouTripleTriadScreen };
