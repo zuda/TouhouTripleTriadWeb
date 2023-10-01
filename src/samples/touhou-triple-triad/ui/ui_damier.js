@@ -11,8 +11,8 @@ class UIDamier
     {
         this.cursor = p_cursor
         this.cases = [];
-        this.cards = [];
-        this.nb_cards = 0;
+        this.uiCards = [];
+        this.nb_uiCards = 0;
         this.size_i = 175;
         this.size_j = 130;
         this.offset_i = 15;
@@ -25,7 +25,7 @@ class UIDamier
         this.initCases();
 
         for (let i = 0; i < SIZE_BOARD; i++)
-            this.cards[i] = [];
+            this.uiCards[i] = [];
     }
 
     initCases()
@@ -33,12 +33,12 @@ class UIDamier
         for (let i = 0; i < SIZE_BOARD; i++) 
         {
             this.cases[i] = [];
-            this.cards[i] = [];
+            this.uiCards[i] = [];
             for(let j = 0; j < SIZE_BOARD; j++) 
             {
                 this.cases[i][j] = new Background();
                 this.cases[i][j].node.querySelector('.js-background').src = path_card + 'plateau.png';      
-                this.cards[i][j] = null   
+                this.uiCards[i][j] = null   
                 uiManager.addWidget(this.cases[i][j], 'position: absolute; top: ' + (i*this.size_i+this.offset_i) + 'px; left: '  
                                                 + (j*this.size_j + this.offset_j) + 'px; width: '  
                                                 + this.scale + '%;');   
@@ -54,7 +54,7 @@ class UIDamier
     selectFirstEmptyCase(i_row, i_column){
         for (let i = 0; i < SIZE_BOARD; i++){
             for(let j = 0; j < SIZE_BOARD; j++){
-                if (this.cards[i][j] == null){
+                if (this.uiCards[i][j] == null){
                     this.i_selected = i
                     this.j_selected = j
                     this.selectCurrentCase()
@@ -65,11 +65,11 @@ class UIDamier
         }
     }
 
-    setCardInSelectedCase(card){
-        this.cards[this.i_selected][this.j_selected] = card
-        card.ui.node.style.top = this.offset_i+this.size_i*this.i_selected + "px";
-        card.ui.node.style.left = this.offset_j+this.size_j*this.j_selected + "px";
-        card.ui.animate("")
+     setCardInSelectedCase(card){
+        this.uiCards[this.i_selected][this.j_selected] = card
+        card.node.style.top = this.offset_i+this.size_i*this.i_selected + "px";
+        card.node.style.left = this.offset_j+this.size_j*this.j_selected + "px";
+        card.animate("")
     }
 
     moveSelectedCase(dir){
@@ -107,8 +107,13 @@ class UIDamier
         return [i_neighbour,j_neighbour];
     }
 
+    getSelectedCoordinate(){
+        return [this.i_selected, this.j_selected]
+    }
+
+
     selectedCaseIsEmpty(){
-        return this.cards[this.i_selected][this.j_selected] == null
+        return this.uiCards[this.i_selected][this.j_selected] == null
     }
 
     selectCurrentCase(){
@@ -124,8 +129,8 @@ class UIDamier
     removeAllWidjet(){
         for(let i = 0; i < SIZE_BOARD; i++){
             for(let j = 0; j < SIZE_BOARD; j++){
-                if (this.cards[i][j] != null)
-                    uiManager.removeWidget(this.cards[i][j].ui);
+                if (this.uiCards[i][j] != null)
+                    uiManager.removeWidget(this.uiCards[i][j]);
             }
         }
     }

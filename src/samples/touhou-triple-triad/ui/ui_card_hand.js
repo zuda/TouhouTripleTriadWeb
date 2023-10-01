@@ -23,6 +23,12 @@ class UICardHand extends UIWidget {
         this.node.querySelector('.js-border').src = path_card + 'card.png';
     }
 
+    setFromCard(card){
+        this.setCharacter(card.name)
+        this.setPlayerOwner(card.flag_belongToPlayer1)
+        this.setPoints(card.points[0], card.points[1], card.points[2], card.points[3])
+    }
+
     setCharacter(charaName) {
         this.node.querySelector('.js-picture').src = path_card_avatar + charaName + ".png";
     }

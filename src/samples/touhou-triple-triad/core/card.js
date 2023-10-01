@@ -1,14 +1,19 @@
-import {ElementalType, Direction} from './type.ts'
+import { Direction, ElementalType } from "./type"
 
 class Card {
     constructor(){
         this.points = new Array(4)
         this.elemental_type = ElementalType.NONE
         this.name = ""
+        this.flag_belongToPlayer1 = true
     }
 
     setCharacterName(n){
         this.name = n;
+    }
+
+    flipPlayerOwner(){
+        this.flag_belongToPlayer1 = !this.flag_belongToPlayer1
     }
 
     setPoint(dir, val){
@@ -38,4 +43,4 @@ class Card {
         this.points[dir] += val_modificator
     }
 }
-export { Card };
+export { Card as Card };

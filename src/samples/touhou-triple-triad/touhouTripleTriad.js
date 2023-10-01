@@ -9,7 +9,8 @@ import { UIPlayerHands } from './ui/ui_player_hand';
 import { Card } from './core/card';
 import { Direction } from './core/type.ts';
 import { UIDamier } from './ui/ui_damier';
-import { GameState } from './core/gameState';
+import { GameState, SIZE_HAND } from './core/gameState';
+import { UICardHand } from './ui/ui_card_hand';
 
 const path_card = 'samples/touhou-triple-triad/';
 
@@ -33,7 +34,7 @@ class TouhouTripleTriadScreen extends Screen
 
     async onEnter()
     {
-        this.GameState = new GameState();
+        this.gameState = new GameState();
         this.background = new Background();
         uiManager.addWidget(this.background, 'position: absolute; top: -100px; left: -100px; width: 130%;');
 
@@ -59,13 +60,16 @@ class TouhouTripleTriadScreen extends Screen
         const player_cards_name = [["Alice","Patchouli","Cirno", "Reimu", "Sakuya", "Remilia", "Meiling", "Reisen"], ["Mokou","Iku", "Kisume", "Kogasa", "Komachi", "Marisa", "Konngara", "Momiji"]];
 
         for(let i = 0; i < 2; i++){
-            for(let j = 0; j < MAX_NB_CARDS; j++){
+            for(let j = 0; j < SIZE_HAND; j++){
                 let card = new Card()
                 card.setPoints(Math.floor(Math.random() * 10  + 1), Math.floor(Math.random() * 10  + 1), Math.floor(Math.random() * 10  + 1), Math.floor(Math.random() * 10  + 1));
-                card.setCharacter(player_cards_name[i][j])
-                this.players_hand.addCard(i, card)
+                card.setCharacterName(player_cards_name[i][j])
                 if( i==1 )
-                    card.setPlayerOwner(i)
+                    card.flipPlayerOwner()
+                this.gameState.setHandCard(i, card, j)       
+                let ui_card = new UICardHand();
+                ui_card.setFromCard(card)
+                this.players_hand.addCard(i, ui_card)
             }
         }
         this.players_hand.addAllWidjetCards()
@@ -84,6 +88,7 @@ class TouhouTripleTriadScreen extends Screen
                     this.players_hand.selectNeighbourCard(this.player_turn, actionId=="DOWN");
                     break;
                 case "OK":
+                    console.log("card")
                     this.damier.selectFirstEmptyCase()
                     this.players_hand.stopAnimation(this.player_turn)
                     this.FocusMode = FocusMode.Damier;
@@ -101,12 +106,16 @@ class TouhouTripleTriadScreen extends Screen
                     this.damier.moveSelectedCase(key_to_dir_dict[actionId])
                     break;
                 case "OK":
+                    console.log("damier")
                     if (this.damier.selectedCaseIsEmpty()){
+                        let coordinate = this.damier.getSelectedCoordinate()
                         this.damier.setCardInSelectedCase(this.players_hand.getSelectedCard(this.player_turn))
+                        this.gameState.placeHandCardOnBoard(this.player_turn, this.players_hand.get_i_selected(), coordinate[0],coordinate[1])
+                        this.gameState.removeCurCardAndRearrangeHand(this.player_turn)
                         this.players_hand.removeCurCardAndRearrangeHand(this.player_turn)
                         this.player_turn = (this.player_turn+1)%2
                         this.FocusMode = FocusMode.Player;
-                        this.players_hand.i_selected = 0;
+                        this.players_hand.set_i_selected(0);
                         this.players_hand.selectCard(this.player_turn)
                     }
                     break;
@@ -125,9 +134,9 @@ class TouhouTripleTriadScreen extends Screen
         uiManager.removeWidget(this.curseur);
         this.players_hand.removeAllWidjet();
         this.damier.removeAllWidjet()
-        for(let i = 0; i < MAX_NB_CARDS; i++)
+        for(let i = 0; i < SIZE_HAND; i++)
             uiManager.removeWidget(this.player1_hand.getCard(i).ui);
-        for(let i = 0; i < MAX_NB_CARDS; i++)
+        for(let i = 0; i < SIZE_HAND; i++)
             uiManager.removeWidget(this.player2_hand.getCard(i).ui);
     }
 }
