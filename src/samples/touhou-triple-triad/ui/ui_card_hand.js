@@ -40,7 +40,7 @@ class UICardHand extends UIWidget {
             this.node.querySelector('.js-background').src = path_card + 'red.png';
     }
 
-    setPoints(top, right, bottom, left) {
+    setPoints(left, top, right, bottom) {
         this.node.querySelector('.js-top').textContent = top.toString(16).toUpperCase();
         this.node.querySelector('.js-right').textContent = right.toString(16).toUpperCase();
         this.node.querySelector('.js-bottom').textContent = bottom.toString(16).toUpperCase();

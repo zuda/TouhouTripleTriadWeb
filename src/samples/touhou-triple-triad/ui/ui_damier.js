@@ -21,7 +21,6 @@ class UIDamier
         this.i_selected = 0
         this.j_selected = 0
 
-
         this.initCases();
 
         for (let i = 0; i < SIZE_BOARD; i++)
@@ -50,6 +49,15 @@ class UIDamier
         return this.cases[i_row][i_column];
     }
 
+    getUICard(i_row, i_column){
+        return this.uiCards[i_row][i_column];
+    }
+
+    isFull(){
+        console.log(this.nb_uiCards)
+        return this.nb_uiCards == SIZE_BOARD*SIZE_BOARD
+    }
+
     // sélectionne la premiere case vide rencontré dans le damier. 
     selectFirstEmptyCase(i_row, i_column){
         for (let i = 0; i < SIZE_BOARD; i++){
@@ -66,10 +74,11 @@ class UIDamier
     }
 
      setCardInSelectedCase(card){
-        this.uiCards[this.i_selected][this.j_selected] = card
+        this.uiCards[this.i_selected][this.j_selected] = card;
         card.node.style.top = this.offset_i+this.size_i*this.i_selected + "px";
         card.node.style.left = this.offset_j+this.size_j*this.j_selected + "px";
-        card.animate("")
+        card.animate("");
+        this.nb_uiCards+=1;
     }
 
     moveSelectedCase(dir){
@@ -80,8 +89,7 @@ class UIDamier
         this.selectCurrentCase()
     }
 
-    getNeighbourCase(i, j, dir)
-    {
+    getNeighbourCase(i, j, dir){
         let coordonate_neighbour = this.getCoordonnateNeighbourCase(i, j, dir)
         return this.cases[coordonate_neighbour[0]][coordonate_neighbour[1]];
     }

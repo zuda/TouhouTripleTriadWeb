@@ -3,3 +3,5 @@ enum PriorityInBattleEffect {
 	Identique,
 	Normal
 }
+
+export {PriorityInBattleEffect}
