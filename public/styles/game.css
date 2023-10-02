@@ -20,6 +20,31 @@
   }
 }
 
+.UIScore-points {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 40px;
+  height: 50px;
+  font-size: 64px;
+}
+
+.UIScore-points-p1 {
+  position:absolute;
+  top:0;
+  left:120px;
+  translate: 0% 0;
+  text-shadow: 4px 4px 4px black;
+}
+
+.UIScore-points-p2 {
+  position:absolute;
+  top:0;
+  left:900px;
+  translate: 0% 0;
+  text-shadow: 4px 4px 4px black;
+}
+
 .UIDamier, .UIBackgroundTTT {
   position: absolute;
 }

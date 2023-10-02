@@ -12,6 +12,7 @@ class GameState {
         this.hands = [new Array(SIZE_HAND), new Array(SIZE_HAND)]
         this.nb_cards_in_hand = [SIZE_HAND, SIZE_HAND]
         this.board = new Array(SIZE_BOARD)
+        this.score = 8;
         this.rules
         this.standardsEffect = [new PlusEffect(), new IdentiqueEffect(), new NormalEffect()]
         for (let i = 0; i < SIZE_BOARD; i++){
@@ -22,7 +23,7 @@ class GameState {
         }
     }
 
-    //getter
+    //////////////////GETTER//
     getBoard(){
         return this.board;
     }
@@ -31,8 +32,18 @@ class GameState {
         return this.board[i][j];
     }
 
+    getScore(){
+        return this.score;
+    }
+
+    ///////////////SETTER//
     setHandCard(player_num, card, i){
         this.hands[player_num][i] =  card
+    }
+
+    restartGame(){
+        this.score = 8;
+        clearBoard();
     }
 
     clearBoard(){
@@ -87,7 +98,7 @@ class GameState {
     performBattle(i, j){
         let coord_cardToupdate = new Array(0)
         for(let i_effect = 0; i_effect<this.standardsEffect.length; i_effect+=1){
-            this.standardsEffect[i_effect].apply_effect(this, i, j, coord_cardToupdate);
+            this.score += this.standardsEffect[i_effect].apply_effect(this, i, j, coord_cardToupdate);
         }
         return coord_cardToupdate
     }

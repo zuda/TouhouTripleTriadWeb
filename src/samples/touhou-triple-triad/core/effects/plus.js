@@ -11,7 +11,7 @@ class PlusEffect extends Effect{
     //applique l'effet de la carte situé sur les coordonnees pos_i, pos_j sur le damier
     //coord_cardToUpdate : parametre en mode inout, contenant la liste des carte dont il faudra mettre à jour l'ui
     apply_effect(gameState, pos_i, pos_j, coord_cardToUpdate){
-        let board = gameState.getBoard()
+        let cpt_p1_gain = 0;
         let cur_card = gameState.getCardFromBoard(pos_i, pos_j)
         let list_sum = []
         let list_coord = []
@@ -45,8 +45,13 @@ class PlusEffect extends Effect{
                 if ( neighbour_card.getOwner() != cur_card.getOwner() ){
                     neighbour_card.flipPlayerOwner();
                     coord_cardToUpdate.push(list_coord[i]);
+                    if(neighbour_card.getOwner()) 
+                        cpt_p1_gain+=1;
+                    else
+                        cpt_p1_gain-=1;
                 }
             }
+        return cpt_p1_gain;
     }
 }
 export { PlusEffect };

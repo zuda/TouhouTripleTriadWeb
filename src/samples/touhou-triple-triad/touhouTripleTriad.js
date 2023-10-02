@@ -11,6 +11,7 @@ import { Direction } from './core/type.ts';
 import { UIDamier } from './ui/ui_damier';
 import { GameState, SIZE_HAND } from './core/gameState';
 import { UICardHand } from './ui/ui_card_hand';
+import { UIScore } from './ui/ui_score';
 
 const path_card = 'samples/touhou-triple-triad/';
 
@@ -36,22 +37,24 @@ class TouhouTripleTriadScreen extends Screen
     {
         this.gameState = new GameState();
         this.background = new Background();
+        this.score = new UIScore();
         uiManager.addWidget(this.background, 'position: absolute; top: -100px; left: -100px; width: 130%;');
-
+        
         this.curseur = new Background();
         this.curseur.node.querySelector('.js-background').src = path_card + 'curseur.png';
         this.players_hand = new UIPlayerHands(this.curseur);
-
+        
         this.player_turn = 0;
         this.FocusMode = FocusMode.Player;
-
+        
         eventManager.subscribe(inputManager, 'E_ACTION', this, this.onAction);
         this.background.focus();
-
+        
         this.damier = new UIDamier(this.curseur);
         this.initPlayersHand();
         uiManager.addWidget(this.curseur, 'position: absolute; top: 240px; left: 240px; width: 2%;');
         this.players_hand.selectCard(this.player_turn)
+        uiManager.addWidget(this.score, 'position: absolute; top: 600px; left: 200px; width: 130%;');
         coreManager.setSize(1500, 730, SizeMode.FULL);
     }
 
@@ -115,6 +118,8 @@ class TouhouTripleTriadScreen extends Screen
                         this.players_hand.removeCurCardAndRearrangeHand(this.player_turn)
                         
                         let coord_cardToUpdate = this.gameState.performBattle(coordinate[0],coordinate[1]);
+                        let score = this.gameState.getScore();
+                        this.score.setScore(score);
                         for (let i = 0; i<coord_cardToUpdate.length; i+=1){
                             let coord = coord_cardToUpdate[i]
                             let cardToUpdate = this.damier.getUICard(coord[0], coord[1]);
