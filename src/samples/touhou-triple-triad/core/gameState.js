@@ -13,6 +13,7 @@ class GameState {
         this.nb_cards_in_hand = [SIZE_HAND, SIZE_HAND]
         this.board = new Array(SIZE_BOARD)
         this.score = 8;
+        
         this.rules
         this.standardsEffect = [new PlusEffect(), new IdentiqueEffect(), new NormalEffect()]
         for (let i = 0; i < SIZE_BOARD; i++){
@@ -21,6 +22,27 @@ class GameState {
                 this.board[i][j] = null
             }
         }
+
+        this.horizontal_wall = new Array(SIZE_BOARD);
+        for (let i = 0; i < SIZE_BOARD+1; i++){
+            this.horizontal_wall[i] = new Array(SIZE_BOARD)
+            for (let j = 0; j < SIZE_BOARD; j++){
+                this.horizontal_wall[i][j] = false
+            }
+        }
+        this.horizontal_wall[0][0] = true
+        this.horizontal_wall[SIZE_BOARD][0] = true
+
+        this.vertical_wall = new Array(SIZE_BOARD);
+        for (let i = 0; i < SIZE_BOARD; i++){
+            this.vertical_wall[i] = new Array(SIZE_BOARD)
+            for (let j = 0; j < SIZE_BOARD; j++){
+                this.vertical_wall[i][j] = false
+            }
+        }
+        this.vertical_wall[0][0] = true
+        this.vertical_wall[SIZE_BOARD-1][0] = true
+
     }
 
     //////////////////GETTER//
@@ -72,24 +94,37 @@ class GameState {
 
     getNeighbourCardFromBoard(i, j, dir){
         let coord_neighbour = getCoordinateNeighbourCardFromBoard()
-        return this.board[coord_neighbour[0]][coord_neighbour[1]];
+        if(coord_neighbour == null){
+            return null;
+        }
+        else{
+            return this.board[coord_neighbour[0]][coord_neighbour[1]];
+        }
     }
 
     getCoordinateNeighbourCardFromBoard(i, j, dir){
         let i_neighbour = i;
         let j_neighbour = j;
         switch(dir){                
+            case Direction.W:
+                if(this.vertical_wall[i][j])
+                    return null;
+                (j_neighbour==0) ? j_neighbour=SIZE_BOARD-1 : j_neighbour=j_neighbour-1
+                break;
             case Direction.N:
+                if(this.horizontal_wall[i][j])
+                    return null;
                 (i_neighbour==0) ? i_neighbour=SIZE_BOARD-1 : i_neighbour=i_neighbour-1
                 break;
             case Direction.E:
                 (j_neighbour==SIZE_BOARD-1) ? j_neighbour=0 : j_neighbour=j_neighbour+1
+                if(this.vertical_wall[i_neighbour][j_neighbour])
+                    return null;
                 break;
             case Direction.S:
                 (i_neighbour==SIZE_BOARD-1) ? i_neighbour=0 : i_neighbour=i_neighbour+1
-                break;
-            case Direction.W:
-                (j_neighbour==0) ? j_neighbour=SIZE_BOARD-1 : j_neighbour=j_neighbour-1
+                if(this.horizontal_wall[i_neighbour][j_neighbour])
+                    return null;
                 break;
         }
         return [i_neighbour, j_neighbour];

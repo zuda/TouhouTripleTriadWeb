@@ -19,16 +19,18 @@ class IdentiqueEffect extends Effect{
         let flag_identique = false;
         for(let dir = Direction.W; dir<Direction.S+1; dir+=1) {
             let coord_neighbour = gameState.getCoordinateNeighbourCardFromBoard(pos_i, pos_j, dir);
-            let neighbour_card = gameState.getCardFromBoard(coord_neighbour[0], coord_neighbour[1]);
-            if ( neighbour_card != null 
-                && cur_card.getVal(dir) == neighbour_card.getVal((dir+2)%4)
-            ){
-                if(cpt == 0){
-                    // console.log("identique " + neighbour_card.name)
-                    cpt += 1
-                    flag_identique = true
+            if(coord_neighbour!=null){
+                let neighbour_card = gameState.getCardFromBoard(coord_neighbour[0], coord_neighbour[1]);
+                if ( neighbour_card != null 
+                    && cur_card.getVal(dir) == neighbour_card.getVal((dir+2)%4)
+                ){
+                    if(cpt == 0){
+                        // console.log("identique " + neighbour_card.name)
+                        cpt += 1
+                        flag_identique = true
+                    }
+                    list_coord.push(coord_neighbour)
                 }
-                list_coord.push(coord_neighbour)
             }
         }
 

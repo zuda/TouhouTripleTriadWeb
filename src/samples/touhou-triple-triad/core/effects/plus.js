@@ -18,11 +18,13 @@ class PlusEffect extends Effect{
         // on calcule la somme de la valeur de la carte entrée en jeu avec la valeur vis à vis de son voisin et ceux pour chaque voisin
         for(let dir = Direction.W; dir<Direction.S+1; dir+=1) {
             let coord_neighbour = gameState.getCoordinateNeighbourCardFromBoard(pos_i, pos_j, dir);
-            let neighbour_card = gameState.getCardFromBoard(coord_neighbour[0], coord_neighbour[1]);
-            if ( neighbour_card != null){
-                // console.log("check " + neighbour_card.name + " " + cur_card.getVal(dir) + "+" + neighbour_card.getVal((dir+2)%4)) 
-                list_sum.push(cur_card.getVal(dir) + neighbour_card.getVal((dir+2)%4)) 
-                list_coord.push(coord_neighbour)
+            if(coord_neighbour!=null){
+                let neighbour_card = gameState.getCardFromBoard(coord_neighbour[0], coord_neighbour[1]);
+                if ( neighbour_card != null){
+                    // console.log("check " + neighbour_card.name + " " + cur_card.getVal(dir) + "+" + neighbour_card.getVal((dir+2)%4)) 
+                    list_sum.push(cur_card.getVal(dir) + neighbour_card.getVal((dir+2)%4)) 
+                    list_coord.push(coord_neighbour)
+                }
             }
         }
 

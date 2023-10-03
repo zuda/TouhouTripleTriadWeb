@@ -54,7 +54,6 @@ class UIDamier
     }
 
     isFull(){
-        console.log(this.nb_uiCards)
         return this.nb_uiCards == SIZE_BOARD*SIZE_BOARD
     }
 
