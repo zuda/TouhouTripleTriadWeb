@@ -20,6 +20,7 @@ class NormalEffect extends Effect{
                 && neighbour_card.getOwner() != cur_card.getOwner() 
                 && cur_card.getVal(dir) > neighbour_card.getVal((dir+2)%4)
             ){
+                // console.log("normal attack vs " + neighbour_card.name)
                 neighbour_card.flipPlayerOwner();
                 coord_cardToUpdate.push(coord_neighbour);
                 if(neighbour_card.getOwner()) 

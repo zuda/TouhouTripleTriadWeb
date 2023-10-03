@@ -21,9 +21,11 @@ class IdentiqueEffect extends Effect{
             let coord_neighbour = gameState.getCoordinateNeighbourCardFromBoard(pos_i, pos_j, dir);
             let neighbour_card = gameState.getCardFromBoard(coord_neighbour[0], coord_neighbour[1]);
             if ( neighbour_card != null 
-                && cur_card.getVal(dir) == neighbour_card.getVal((dir+2)%4)){
-                cpt += 1
-                if(cpt == 2){
+                && cur_card.getVal(dir) == neighbour_card.getVal((dir+2)%4)
+            ){
+                if(cpt == 0){
+                    // console.log("identique " + neighbour_card.name)
+                    cpt += 1
                     flag_identique = true
                 }
                 list_coord.push(coord_neighbour)
@@ -35,8 +37,9 @@ class IdentiqueEffect extends Effect{
             let neighbour_card = gameState.getCardFromBoard(list_coord[i][0], list_coord[i][1]);
             // si la carte voisine est une carte ennemi, elle devient une carte allié
             if ( neighbour_card.getOwner() != cur_card.getOwner() ){
+                
                 neighbour_card.flipPlayerOwner();
-                coord_cardToUpdate.push(coord_neighbour);
+                coord_cardToUpdate.push(list_coord[i]);
                 if(neighbour_card.getOwner()) 
                     cpt_p1_gain+=1;
                 else

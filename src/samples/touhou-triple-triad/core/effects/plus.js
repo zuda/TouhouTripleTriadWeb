@@ -20,6 +20,7 @@ class PlusEffect extends Effect{
             let coord_neighbour = gameState.getCoordinateNeighbourCardFromBoard(pos_i, pos_j, dir);
             let neighbour_card = gameState.getCardFromBoard(coord_neighbour[0], coord_neighbour[1]);
             if ( neighbour_card != null){
+                // console.log("check " + neighbour_card.name + " " + cur_card.getVal(dir) + "+" + neighbour_card.getVal((dir+2)%4)) 
                 list_sum.push(cur_card.getVal(dir) + neighbour_card.getVal((dir+2)%4)) 
                 list_coord.push(coord_neighbour)
             }
@@ -29,12 +30,15 @@ class PlusEffect extends Effect{
         let flag_plus = false;
         let i = 0
         for (i = 0; i<list_sum.length-1; i+=1){
-            for (let j = i; j<list_sum.length; j+=1){
+            for (let j = i+1; j<list_sum.length; j+=1){
                 if(list_sum[i] == list_sum[j]){
                     flag_plus = true;
+                    // console.log("plus " + gameState.getCardFromBoard(list_coord[i][0], list_coord[i][1]).name)
                     break;
                 }
             }
+            if(flag_plus)
+                break;
         }
 
         //si il y a des sommes identiques, toutes les cartes sont vaincu
