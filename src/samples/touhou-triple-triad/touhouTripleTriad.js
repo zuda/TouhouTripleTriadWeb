@@ -52,6 +52,7 @@ class TouhouTripleTriadScreen extends Screen
         
         this.damier = new UIDamier(this.curseur);
         this.initPlayersHand();
+        this.damier.initWalls(this.gameState.vertical_wall, this.gameState.horizontal_wall);
         uiManager.addWidget(this.curseur, 'position: absolute; top: 240px; left: 240px; width: 2%;');
         this.players_hand.selectCard(this.player_turn)
         uiManager.addWidget(this.score, 'position: absolute; top: 600px; left: 200px; width: 130%;');
@@ -154,7 +155,8 @@ class TouhouTripleTriadScreen extends Screen
         uiManager.removeWidget(this.background);
         uiManager.removeWidget(this.curseur);
         this.players_hand.removeAllWidjet();
-        this.damier.removeAllWidjet()
+        uiManager.removeWidget(this.score);
+        this.damier.removeAllWidjet();
         for(let i = 0; i < SIZE_HAND; i++)
             uiManager.removeWidget(this.player1_hand.getCard(i));
         for(let i = 0; i < SIZE_HAND; i++)

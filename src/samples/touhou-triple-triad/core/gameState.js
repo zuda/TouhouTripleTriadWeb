@@ -31,7 +31,7 @@ class GameState {
             }
         }
         this.horizontal_wall[0][0] = true
-        this.horizontal_wall[SIZE_BOARD][0] = true
+        this.horizontal_wall[0][SIZE_BOARD-1] = true
 
         this.vertical_wall = new Array(SIZE_BOARD);
         for (let i = 0; i < SIZE_BOARD; i++){

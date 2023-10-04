@@ -2,6 +2,7 @@ import { Direction } from "../core/type.ts";
 import { Background } from "./ui_background";
 import { uiManager } from "../../../lib/ui/ui_manager";
 import { SIZE_BOARD } from "../core/gameState.js";
+import { UIWall } from "./ui_wall.js";
 
 const path_card = 'samples/touhou-triple-triad/';
 
@@ -12,6 +13,8 @@ class UIDamier
         this.cursor = p_cursor
         this.cases = [];
         this.uiCards = [];
+        this.uiVertical_walls = [];
+        this.uiHorizontal_walls = [];
         this.nb_uiCards = 0;
         this.size_i = 175;
         this.size_j = 130;
@@ -41,6 +44,45 @@ class UIDamier
                 uiManager.addWidget(this.cases[i][j], 'position: absolute; top: ' + (i*this.size_i+this.offset_i) + 'px; left: '  
                                                 + (j*this.size_j + this.offset_j) + 'px; width: '  
                                                 + this.scale + '%;');   
+            }
+        }
+    }
+
+    initWalls(vertical_walls, horizontal_walls){
+        
+        let j = 0;
+        let UIwalls = [this.uiVertical_walls, this.uiHorizontal_walls];
+        let walls = [vertical_walls, horizontal_walls];
+        for (let i = 0; i<SIZE_BOARD; i+=1){
+            for (let j = 0; j<SIZE_BOARD; j+=1){
+                //i_axe == 0 => vertical; i_axe == 1 => horizontal
+                for(let i_axe = 0; i_axe<2; i_axe+=1){
+                    if(walls[i_axe][i][j]){
+                        let new_wall = new UIWall(i_axe==0)
+                        UIwalls[i_axe].push(new_wall);
+                        uiManager.addWidget(new_wall, 'position: absolute; top: ' + (i*this.size_i+this.offset_i) + 'px; left: '  
+                                                        + (j*this.size_j + this.offset_j) + 'px; width: '  
+                                                        + this.scale + '%;');
+                        //si on se trouve sur la première ligne et qu'on est en train de placer un mur horizontal
+                        if(i == 0 && i_axe==1){
+                            // on créé un visuel de mur horizontal supplémentaire après la derniere ligne
+                            let extra_wall = new UIWall(i_axe==0)
+                            UIwalls[i_axe].push(extra_wall);
+                            uiManager.addWidget(extra_wall, 'position: absolute; top: ' + ((i+SIZE_BOARD)*this.size_i+this.offset_i) + 'px; left: '  
+                                                            + (j*this.size_j + this.offset_j) + 'px; width: '  
+                                                            + this.scale + '%;');
+                        }
+                        //si on se trouve sur la première colonne et qu'on est en train de placer un mur vertical
+                        else if(j == 0 && i_axe==0){
+                            // on créé un visuel de mur vertical supplémentaire après la derniere colonne
+                            let extra_wall = new UIWall(i_axe==0)
+                            UIwalls[i_axe].push(extra_wall);
+                            uiManager.addWidget(extra_wall, 'position: absolute; top: ' + (i*this.size_i+this.offset_i) + 'px; left: '  
+                                                            + ((j+SIZE_BOARD)*this.size_j + this.offset_j) + 'px; width: '  
+                                                            + this.scale + '%;');
+                        }
+                    }
+                }
             }
         }
     }
