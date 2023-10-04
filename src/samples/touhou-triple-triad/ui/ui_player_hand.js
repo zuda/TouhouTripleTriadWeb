@@ -5,7 +5,7 @@ import { SIZE_HAND } from "../core/gameState";
 class UIPlayerHands {
     constructor(p_cursor) {
         this.cursor = p_cursor
-        this.offset_cursor = [30, -30];
+        this.offset_cursor = [180, -30];
         this.size_i = 70;
         this.size_j = 130;
         this.offset_i = 35;
