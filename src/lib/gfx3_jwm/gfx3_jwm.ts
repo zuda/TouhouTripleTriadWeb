@@ -2,9 +2,6 @@ import { gfx3DebugRenderer } from '../gfx3/gfx3_debug_renderer';
 import { UT } from '../core/utils';
 import { Gfx3Transformable } from '../gfx3/gfx3_transformable';
 
-const MOVE_MAX_RECURSIVE_CALL = 5;
-const MARGIN = 0.8;
-
 interface Sector {
   v1: vec3;
   v2: vec3;
@@ -15,6 +12,10 @@ interface Neighbor {
   s1: number;
   s2: number;
   s3: number;
+};
+
+interface Shared {
+  sectorIds: Array<number>
 };
 
 interface WalkerPoint {
@@ -29,22 +30,37 @@ interface Walker {
   points: Array<WalkerPoint>;
 };
 
+/**
+ * The `Gfx3JWM` is a class that represents a walkmesh and provides methods for loading
+ * data, updating and drawing, adding and moving walkers, and clearing walkers.
+ * In collision case, the collision response sliding along the edges of the walkmesh to keep a good
+ * feeling for the player.
+ */
 class Gfx3JWM extends Gfx3Transformable {
   sectors: Array<Sector>;
   neighborPool: Array<Neighbor>;
+  sharedPool: Array<Shared>;
   walkers: Array<Walker>;
   debugVertices: Array<number>;
   debugVertexCount: number;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     super();
     this.sectors = [];
     this.neighborPool = [];
+    this.sharedPool = [];
     this.walkers = [];
     this.debugVertices = [];
     this.debugVertexCount = 0;
   }
 
+  /**
+   * The "loadFromFile" function asynchronously loads walkmesh data from a json file (jwm).
+   * @param {string} path - The `path` parameter is the file path.
+   */
   async loadFromFile(path: string): Promise<void> {
     const response = await fetch(path);
     const json = await response.json();
@@ -70,8 +86,18 @@ class Gfx3JWM extends Gfx3Transformable {
         s3: obj[2]
       });
     }
+
+    this.sharedPool = [];
+    for (const obj of json['SharedPool']) {
+      this.sharedPool.push({
+        sectorIds: obj
+      });
+    }
   }
 
+  /**
+   * The "update" function.
+   */
   update(): void {
     this.debugVertices = [];
     this.debugVertexCount = 0;
@@ -99,10 +125,23 @@ class Gfx3JWM extends Gfx3Transformable {
     }
   }
 
+  /**
+   * The "draw" function.
+   */
   draw(): void {
     gfx3DebugRenderer.drawVertices(this.debugVertices, this.debugVertexCount, this.getTransformMatrix());
   }
 
+  /**
+   * The "addWalker" function adds a new walker identified by a unique identifier of your choice.
+   * A walker is the representation of a moving entity inside a walkmesh context. It is a square
+   * of `radius` size moving along the floor.
+   * @param {string} id - A unique identifier for the walker.
+   * @param {number} x - The x-coordinate of the walker's starting position.
+   * @param {number} z - The z-coordinate of the walker's starting position.
+   * @param {number} radius - The radius parameter represents the size of the walker.
+   * @returns a Walker object.
+   */
   addWalker(id: string, x: number, z: number, radius: number): Walker {
     if (this.walkers.find(w => w.id == id)) {
       throw new Error('Gfx3JWM::moveWalker: walker with id ' + id + ' already exist.');
@@ -123,6 +162,16 @@ class Gfx3JWM extends Gfx3Transformable {
     return walker;
   }
 
+  /**
+   * The "moveWalker" function move the specified walker based on the provided movement values.
+   * @param {string} id - The `id` parameter is a string that represents the unique identifier of the
+   * walker.
+   * @param {number} mx - The parameter `mx` represents the movement in the x-axis (horizontal movement)
+   * for the walker.
+   * @param {number} mz - The parameter `mz` represents the movement in the z-axis (vertical movement)
+   * for the walker.
+   * @returns The projected move if walker collide on edges of the walkmesh, otherwise simply the original move.
+   */
   moveWalker(id: string, mx: number, mz: number): vec3 {
     const walker = this.walkers.find(w => w.id == id);
     if (!walker) {
@@ -154,7 +203,7 @@ class Gfx3JWM extends Gfx3Transformable {
     while (i < points.length) {
       let deviation = false;
       if (!deviatedPoints[i]) {
-        const moveInfo = this.$utilsMove(points[i].sectorIndex, points[i].x, points[i].z, mx, mz, MARGIN);
+        const moveInfo = this.$utilsMove(points[i].sectorIndex, points[i].x, points[i].z, mx, mz);
         if (moveInfo.mx == 0 && moveInfo.mz == 0) {
           mx = 0;
           mz = 0;
@@ -215,6 +264,9 @@ class Gfx3JWM extends Gfx3Transformable {
     return [mx, my, mz];
   }
 
+  /**
+   * The "clearWalkers" function remove all walker instances.
+   */
   clearWalkers(): void {
     this.walkers = [];
   }
@@ -232,59 +284,44 @@ class Gfx3JWM extends Gfx3Transformable {
     return { sectorIndex: -1, elev: Infinity };
   }
 
-  $utilsMove(sectorIndex: number, x: number, z: number, mx: number, mz: number, margin: number, i: number = 0): { sectorIndex: number, mx: number, mz: number, elevation: number } {
-    const a = this.sectors[sectorIndex].v1;
-    const b = this.sectors[sectorIndex].v2;
-    const c = this.sectors[sectorIndex].v3;
-
-    if (i == MOVE_MAX_RECURSIVE_CALL) {
-      return { sectorIndex, mx: 0, mz: 0, elevation: Infinity };
-    }
-
+  $utilsMove(sectorIndex: number, x: number, z: number, mx: number, mz: number, i: number = 0): { sectorIndex: number, mx: number, mz: number, elevation: number } {
     if (mx > -UT.BIG_EPSILON && mx < +UT.BIG_EPSILON && mz > -UT.BIG_EPSILON && mz < +UT.BIG_EPSILON) {
-      return { sectorIndex, mx: 0, mz: 0, elevation: Infinity };
+      return { sectorIndex: sectorIndex, mx: 0, mz: 0, elevation: Infinity };
     }
 
-    const nmx = mx + (mx * margin);
-    const nmz = mz + (mz * margin);
-
-    const elevation = UT.TRI3_POINT_ELEVATION([x + nmx, z + nmz], a, b, c);
-    if (elevation != Infinity) {
-      return { sectorIndex, mx, mz, elevation };
+    if (i >= this.sharedPool[sectorIndex].sectorIds.length) {
+      return { sectorIndex: sectorIndex, mx: 0, mz: 0, elevation: Infinity };
     }
 
-    const inside = UT.TRI2_POINT_INSIDE([x + nmx, z + nmz], [a[0], a[2]], [b[0], b[2]], [c[0], c[2]]);
+    const sharedSectorIndex = this.sharedPool[sectorIndex].sectorIds[i];
+    const a = this.sectors[sharedSectorIndex].v1;
+    const b = this.sectors[sharedSectorIndex].v2;
+    const c = this.sectors[sharedSectorIndex].v3;
+
+    const inside = UT.TRI2_POINT_INSIDE([x + mx, z + mz], [a[0], a[2]], [b[0], b[2]], [c[0], c[2]]);
+    if (inside == 1) {
+      const elevation = UT.TRI3_POINT_ELEVATION([x + mx, z + mz], a, b, c);
+      return { sectorIndex: sharedSectorIndex, mx: mx, mz: mz, elevation: elevation };
+    }
+
     const ab: vec2 = [b[0] - a[0], b[2] - a[2]];
     const bc: vec2 = [c[0] - b[0], c[2] - b[2]];
     const ca: vec2 = [a[0] - c[0], a[2] - c[2]];
 
-    if (this.neighborPool[sectorIndex].s1 == -1 && inside == -1) {
-      const [pmx, pmz] = UT.VEC2_PROJECTION_COS([mx, mz], ab);
-      return this.$utilsMove(sectorIndex, x, z, pmx, pmz, margin, i + 1);
+    if (this.neighborPool[sharedSectorIndex].s1 == -1 && UT.COLLIDE_LINE_TO_LINE([a[0], a[2]], [b[0], b[2]], [x, z], [x + mx, z + mz])) {
+      [mx, mz] = UT.VEC2_PROJECTION_COS([mx, mz], ab);
+      return this.$utilsMove(sectorIndex, x, z, mx, mz, 0);
     }
-    else if (this.neighborPool[sectorIndex].s2 == -1 && inside == -2) {
-      const [pmx, pmz] = UT.VEC2_PROJECTION_COS([mx, mz], bc);
-      return this.$utilsMove(sectorIndex, x, z, pmx, pmz, margin, i + 1);
+    else if (this.neighborPool[sharedSectorIndex].s2 == -1 && UT.COLLIDE_LINE_TO_LINE([b[0], b[2]], [c[0], c[2]], [x, z], [x + mx, z + mz])) {
+      [mx, mz] = UT.VEC2_PROJECTION_COS([mx, mz], bc);
+      return this.$utilsMove(sectorIndex, x, z, mx, mz, 0);
     }
-    else if (this.neighborPool[sectorIndex].s3 == -1 && inside == -3) {
-      const [pmx, pmz] = UT.VEC2_PROJECTION_COS([mx, mz], ca);
-      return this.$utilsMove(sectorIndex, x, z, pmx, pmz, margin, i + 1);
+    else if (this.neighborPool[sharedSectorIndex].s3 == -1 && UT.COLLIDE_LINE_TO_LINE([c[0], c[2]], [a[0], a[2]], [x, z], [x + mx, z + mz])) {
+      [mx, mz] = UT.VEC2_PROJECTION_COS([mx, mz], ca);
+      return this.$utilsMove(sectorIndex, x, z, mx, mz, 0);
     }
-    else if (this.neighborPool[sectorIndex].s1 != -1 && inside == -1) {
-      const nextSectorIndex = this.neighborPool[sectorIndex].s1;
-      return this.$utilsMove(nextSectorIndex, x, z, mx, mz, margin, i + 1);
-    }
-    else if (this.neighborPool[sectorIndex].s2 != -1 && inside == -2) {
-      const nextSectorIndex = this.neighborPool[sectorIndex].s2;
-      return this.$utilsMove(nextSectorIndex, x, z, mx, mz, margin, i + 1);
-    }
-    else if (this.neighborPool[sectorIndex].s3 != -1 && inside == -3) {
-      const nextSectorIndex = this.neighborPool[sectorIndex].s3;
-      return this.$utilsMove(nextSectorIndex, x, z, mx, mz, margin, i + 1);
-    }
-    else {
-      return { sectorIndex, mx, mz, elevation };
-    }
+
+    return this.$utilsMove(sectorIndex, x, z, mx, mz, i + 1);
   }
 
   $utilsCreatePoint(x: number, z: number): WalkerPoint {

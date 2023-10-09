@@ -48,7 +48,7 @@ export const PIPELINE_DESC: any = {
   }
 };
 
-export const VERTEX_SHADER = `
+export const VERTEX_SHADER = /* wgsl */`
 struct VertexOutput {
   @builtin(position) Position: vec4<f32>,
   @location(0) ClipPos: vec4<f32>
@@ -65,10 +65,10 @@ fn main(
   return output;
 }`;
 
-export const FRAGMENT_SHADER = `
+export const FRAGMENT_SHADER = /* wgsl */`
 @group(0) @binding(0) var<uniform> VPC_INVERSE_MATRIX: mat4x4<f32>;
-@group(1) @binding(0) var CUBEMAP_SAMPLER: sampler;
-@group(1) @binding(1) var CUBEMAP_TEXTURE: texture_cube<f32>;
+@group(1) @binding(0) var CUBEMAP_TEXTURE: texture_cube<f32>;
+@group(1) @binding(1) var CUBEMAP_SAMPLER: sampler;
 
 @fragment
 fn main(

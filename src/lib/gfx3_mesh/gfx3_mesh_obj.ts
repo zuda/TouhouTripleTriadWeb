@@ -1,4 +1,3 @@
-import { UT } from '../core/utils';
 import { Gfx3Material } from './gfx3_mesh_material';
 import { gfx3TextureManager } from '../gfx3/gfx3_texture_manager';
 import { Gfx3Mesh, Group } from './gfx3_mesh';
@@ -7,8 +6,10 @@ import { Gfx3BoundingBox } from '../gfx3/gfx3_bounding_box';
 class OBJObject {
   name: string;
   coords: Array<number>;
+  colors: Array<number>;
   texcoords: Array<number>;
   normals: Array<number>;
+  lines: Array<number>;
   groups: Array<Group>;
   materialName: string;
   vertexCount: number;
@@ -16,24 +17,62 @@ class OBJObject {
   constructor() {
     this.name = '';
     this.coords = new Array<number>();
+    this.colors = new Array<number>();
     this.texcoords = new Array<number>();
     this.normals = new Array<number>();
+    this.lines = new Array<number>();
     this.groups = new Array<Group>();
     this.materialName = '';
     this.vertexCount = 0;
   }
 }
 
+/**
+ * The `Gfx3MeshOBJ` class is a subclass of Gfx3Mesh that represents a 3D mesh object loaded from an OBJ wavefront file.
+ *
+ * OBJ Options:
+ * - Multiple meshes.
+ * - Optionnal Vertex Normals
+ * - Optionnal Vertex Colors
+ * - Smooth Groups
+ *
+ * MTL Options:
+ * - Kd => Diffuse
+ * - Ks => Specular
+ * - Ns => Specularity
+ * - Ke => Emissive
+ * - d  => Opacity
+ * - map_Kd => Albedo map
+ * - map_Ns => Specularity map
+ * - map_Bump => Normal map
+ */
 class Gfx3MeshOBJ extends Gfx3Mesh {
+  coords: Array<number>;
+  colors: Array<number>;
+  texcoords: Array<number>;
+  normals: Array<number>;
+  objects: Map<string, OBJObject>;
   materials: Map<string, Gfx3Material>;
   meshes: Map<string, Gfx3Mesh>;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     super();
+    this.coords = new Array<number>();
+    this.colors = new Array<number>();
+    this.texcoords = new Array<number>();
+    this.normals = new Array<number>();
+    this.objects = new Map<string, OBJObject>();
     this.materials = new Map<string, Gfx3Material>();
     this.meshes = new Map<string, Gfx3Mesh>();
   }
 
+  /**
+   * The "delete" function free all resources.
+   * Warning: you need to call this method to free allocation for this object.
+   */
   delete() {
     for (const mesh of this.meshes.values()) {
       mesh.delete(true);
@@ -42,23 +81,103 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
     for (const material of this.materials.values()) {
       material.delete();
     }
+
+    super.delete();
   }
 
+  /**
+   * The "update" function.
+   * @param {number} ts - The `ts` parameter stands for "timestep".
+   */
   update(ts: number): void {
     for (const mesh of this.meshes.values()) {
-      mesh.setPosition(this.position[0], this.position[1], this.position[2]);
-      mesh.setRotation(this.rotation[0], this.rotation[1], this.rotation[2]);
-      mesh.setScale(this.scale[0], this.scale[1], this.scale[2]);
       mesh.update(ts);
     }
   }
 
+  /**
+   * The "draw" function.
+   */
   draw(): void {
     for (const mesh of this.meshes.values()) {
       mesh.draw();
     }
   }
 
+  /**
+   * The "loadFromFile" function asynchronously loads `obj` and `mtl` files.
+   * @param {string} objPath - The `obj` file path.
+   * @param {string} mtlPath - The `mtl` file path.
+   */
+  async loadFromFile(objPath: string, mtlPath: string) {
+    await this.$loadMaterials(mtlPath);
+    await this.$loadObjects(objPath);
+  }
+
+  /**
+   * The "getVertexCount" function override `getVertexCount` from `Gfx3Mesh`.
+   */
+  getVertexCount(): number {
+    let vertexCount = 0;
+    for (const mesh of this.meshes.values()) {
+      vertexCount += mesh.getVertexCount();
+    }
+
+    return vertexCount;
+  }
+
+  /**
+   * The "getVertices" function override `getVertices` from `Gfx3Mesh`.
+   */
+  getVertices(): Array<number> {
+    let vertices = new Array<number>();
+    for (const mesh of this.meshes.values()) {
+      vertices.concat(mesh.getVertices());
+    }
+
+    return vertices;
+  }
+
+  /**
+   * The "getMesh" function returns a `Gfx3Mesh` object with the specified name, or throws an error if
+   * the object doesn't exist.
+   * @param {string} name - A string representing the name of the mesh object that you want to retrieve.
+   * @returns The mesh.
+   */
+  getMesh(name: string): Gfx3Mesh {
+    if (!this.meshes.has(name)) {
+      throw new Error('Gfx3MeshOBJ::getMesh(): The mesh object doesn\'t exist !');
+    }
+
+    return this.meshes.get(name)!;
+  }
+
+  /**
+   * The "getMeshes" function returns all `Gfx3Mesh` objects.
+   * @returns An iterable of Gfx3Mesh objects.
+   */
+  getMeshes(): IterableIterator<Gfx3Mesh> {
+    return this.meshes.values();
+  }
+
+  /**
+   * The "getObject" function returns a `OBJObject` object with the specified name, or throws an error if
+   * the object doesn't exist.
+   * @param {string} name - A string representing the name of the object that you want to retrieve.
+   * @returns The object data.
+   */
+  getObject(name: string): OBJObject {
+    if (!this.objects.has(name)) {
+      throw new Error('Gfx3MeshOBJ::getObject(): The object doesn\'t exist !');
+    }
+
+    return this.objects.get(name)!;
+  }
+
+  /**
+   * The "getBoundingBox" function returns the bounding box.
+   * @returns The bounding box.
+   */
   getBoundingBox(): Gfx3BoundingBox {
     const boxes = new Array<Gfx3BoundingBox>();
 
@@ -69,7 +188,25 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
     return Gfx3BoundingBox.merge(boxes);
   }
 
-  async loadMaterials(path: string) {
+  /**
+   * The "getWorldBoundingBox" function returns the world bounding box.
+   * @returns The world bounding box.
+   */
+  getWorldBoundingBox(): Gfx3BoundingBox {
+    const boxes = new Array<Gfx3BoundingBox>();
+
+    for (const mesh of this.meshes.values()) {
+      boxes.push(mesh.getWorldBoundingBox());
+    }
+  
+    return Gfx3BoundingBox.merge(boxes);
+  }
+
+  /**
+   * The "$loadMaterials" function asynchronously loads materials from a specified file (mtl).
+   * @param {string} path - The `path` parameter is the `mtl` file path.
+   */
+  async $loadMaterials(path: string) {
     const response = await fetch(path);
     const text = await response.text();
     const lines = text.split('\n');
@@ -92,23 +229,37 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
       }
 
       if (line.startsWith('Kd ')) {
-        const d = UT.VEC3_PARSE(line.substring(3));
-        curMat.setDiffuse(d[0], d[1], d[2]);
+        const d = line.substring(3).split(' ');
+        const r = parseFloat(d[0]);
+        const g = parseFloat(d[1]);
+        const b = parseFloat(d[2]);
+        curMat.setDiffuse(r, g, b);
       }
 
       if (line.startsWith('Ks ')) {
-        const s = UT.VEC3_PARSE(line.substring(3));
-        curMat.setSpecular(s[0], s[1], s[2]);
+        const s = line.substring(3).split(' ');
+        const r = parseFloat(s[0]);
+        const g = parseFloat(s[1]);
+        const b = parseFloat(s[2]);
+        curMat.setSpecular(r, g, b);
       }
 
-      if (line.startsWith('Ns')) {
+      if (line.startsWith('Ns ')) {
         const s = parseFloat(line.substring(3));
         curMat.setSpecularity(s);
       }
 
+      if (line.startsWith('d')) {
+        const s = parseFloat(line.substring(1));
+        curMat.setOpacity(s);
+      }
+
       if (line.startsWith('Ke ')) {
-        const e = UT.VEC3_PARSE(line.substring(3));
-        curMat.setEmissive(e[0], e[1], e[2]);
+        const e = line.substring(3).split(' ');
+        const r = parseFloat(e[0]);
+        const g = parseFloat(e[1]);
+        const b = parseFloat(e[2]);
+        curMat.setEmissive(r, g, b);
       }
 
       if (line.startsWith('map_Kd ')) {
@@ -127,7 +278,6 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
 
         while (infos[i][0] == '-') {
           const flag = infos[i].substring(1);
-
           if (flag == 'bm') {
             curMat.setNormalIntensity(parseFloat(infos[i + 1]));
           }
@@ -141,12 +291,17 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
     }
   }
 
-  async loadObjects(path: string): Promise<void> {
+  /**
+   * The "$loadObjects" function asynchronously loads objects from a specified file (obj).
+   * @param {string} path - The `path` parameter is the `obj` file path.
+   */
+  async $loadObjects(path: string): Promise<void> {
     const response = await fetch(path);
     const text = await response.text();
     const lines = text.split('\n');
 
-    const objects = new Array<OBJObject>();
+    this.objects.clear();
+
     let currentObject = new OBJObject();
     let currentGroup: Group = { id: 0, indices: [], vertexCount: 0, smooth: false };
 
@@ -155,7 +310,7 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
         const object = new OBJObject();
         object.name = line.substring(2);
         currentObject = object;
-        objects.push(object);
+        this.objects.set(object.name, object);
       }
 
       if (line.startsWith('usemtl ')) {
@@ -163,18 +318,37 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
       }
 
       if (line.startsWith('v ')) {
-        const c = UT.VEC3_PARSE(line.substring(2));
-        currentObject.coords.push(c[0], c[1], c[2]);
+        const v = line.substring(2).split(' ');
+        const x = parseFloat(v[0]);
+        const y = parseFloat(v[1]);
+        const z = parseFloat(v[2]);
+        this.coords.push(x, y, z);
+        currentObject.coords.push(x, y, z);
+
+        if (v.length > 3) {
+          const r = parseFloat(v[3]);
+          const g = parseFloat(v[4]);
+          const b = parseFloat(v[5]);
+          this.colors.push(r, g, b);
+          currentObject.colors.push(r, g, b);
+        }
       }
 
       if (line.startsWith('vt ')) {
-        const t = UT.VEC2_PARSE(line.substring(3));
-        currentObject.texcoords.push(t[0], t[1]);
+        const t = line.substring(3).split(' ');
+        const u = parseFloat(t[0]);
+        const v = 1 - parseFloat(t[1]);
+        this.texcoords.push(u, v);
+        currentObject.texcoords.push(u, v);
       }
 
       if (line.startsWith('vn ')) {
-        const c = UT.VEC3_PARSE(line.substring(3));
-        currentObject.normals.push(c[0], c[1], c[2]);
+        const n = line.substring(3).split(' ');
+        const x = parseFloat(n[0]);
+        const y = parseFloat(n[1]);
+        const z = parseFloat(n[2]);
+        this.normals.push(x, y, z);
+        currentObject.normals.push(x, y, z);
       }
 
       if (line.startsWith('s ')) {
@@ -204,9 +378,14 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
           currentObject.vertexCount++;
         }
       }
+
+      if (line.startsWith('l ')) {
+        const ids = line.substring(2).split(' ');
+        ids.forEach(id => currentObject.lines.push(parseInt(id) - 1));
+      }
     }
 
-    for (const object of objects) {
+    for (const object of this.objects.values()) {
       const mesh = new Gfx3Mesh();
       const material = this.materials.get(object.materialName);
 
@@ -214,20 +393,16 @@ class Gfx3MeshOBJ extends Gfx3Mesh {
         mesh.setMaterial(material);
       }
 
-      const normals = object.normals.length > 0 ? object.normals : undefined; // normals are optionnals
-      const vertices = Gfx3Mesh.build(object.vertexCount, object.coords, object.texcoords, normals, object.groups);
+      const texcoords = object.texcoords.length > 0 ? this.texcoords : undefined; // texcoords are optionnals
+      const normals = object.normals.length > 0 ? this.normals : undefined; // normals are optionnals
+      const colors = object.colors.length > 0 ? this.colors : undefined; // colors are optionnals
 
       mesh.beginVertices(object.vertexCount);
-      mesh.setVertices(vertices);
+      mesh.setVertices(Gfx3Mesh.buildVertices(object.vertexCount, this.coords, texcoords, colors, normals, object.groups));
       mesh.endVertices();
 
       this.meshes.set(object.name, mesh);
     }
-  }
-
-  async loadFromFile(objPath: string, mtlPath: string) {
-    await this.loadMaterials(mtlPath);
-    await this.loadObjects(objPath);
   }
 }
 

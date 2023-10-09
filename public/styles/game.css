@@ -11,42 +11,90 @@
   font-family: "Press Start 2P";
 }
 
-@keyframes clignoter {
-  0%, 50%, 100% {
-    opacity: 1;
-  }
-  25%, 75% {
-    opacity: 0.7;
-  }
+/*---------------------------------------------------------------------------------------------*/
+/* UI BACKGROUND TTT
+/*---------------------------------------------------------------------------------------------*/
+.UIBackgroundTTT {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  user-select: none;
+  pointer-events: none;
 }
 
-.UIScore-points {
+.UIBackgroundTTT-picture {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 40px;
-  height: 50px;
-  font-size: 64px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/*---------------------------------------------------------------------------------------------*/
+/* UI SCORE
+/*---------------------------------------------------------------------------------------------*/
+.UIScore {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 40px;
+  user-select: none;
+  pointer-events: none;
 }
 
 .UIScore-points-p1 {
   position:absolute;
-  top:0;
-  left:120px;
+  left:150px;
   translate: 0% 0;
   text-shadow: 4px 4px 4px black;
 }
 
 .UIScore-points-p2 {
   position:absolute;
-  top:0;
-  left:900px;
+  right:150px;
   translate: 0% 0;
   text-shadow: 4px 4px 4px black;
 }
 
-.UIDamier, .UIBackgroundTTT {
+/*---------------------------------------------------------------------------------------------*/
+/* UI DAMIER & UI BACKGROUND TTT
+/*---------------------------------------------------------------------------------------------*/
+.UIDamier {
   position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  height: 468px;
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  user-select: none;
+  pointer-events: none;
+}
+
+.UIDamier-cell {
+  position:relative;
+  background-image: url('/public/samples/touhou-triple-triad/plateau.png');
+  background-size: cover;
+}
+
+.UIDamier.u-focused .UIDamier-cell.u-focused {
+  animation: blink 1.5s infinite;
+}
+
+.UIDamier-cell .UICard {
+  position: absolute;
+  inset: 0 0 0 0;
 }
 
 .UIDamier-picture, .UIBackgroundTTT-picture {
@@ -60,7 +108,7 @@
   max-width: 100%;
 }
 
-.UIDamier-picture, .UIWall-picture {
+.UIDamier-picture {
   position: absolute;
   top:0;
   left:0;
@@ -71,11 +119,16 @@
   max-width: 100%;
 }
 
-.UICardHand {
+/*---------------------------------------------------------------------------------------------*/
+/* UI WALL
+/*---------------------------------------------------------------------------------------------*/
+.UIWall {
   position: absolute;
+  inset: 0 0 0 0;
+  z-index: 20;
 }
 
-.UICardHand-picture {
+.UIWall-picture {
   position: absolute;
   top:0;
   left:0;
@@ -86,7 +139,25 @@
   max-width: 100%;
 }
 
-.UICardHand-points {
+/*---------------------------------------------------------------------------------------------*/
+/* UI CARD
+/*---------------------------------------------------------------------------------------------*/
+.UICard {
+  position:relative;
+  display: block;
+}
+
+.UICard-picture {
+  position: absolute;
+  top:0;
+  left:0;
+  right: 0;
+  bottom:0;
+  object-fit: cover;
+  width: 100%;
+}
+
+.UICard-points {
   position: absolute;
   top: 10px;
   left: 10px;
@@ -95,7 +166,7 @@
   font-size: 12px;
 }
 
-.UICardHand-points-t {
+.UICard-points-t {
   position:absolute;
   top:0;
   left:50%;
@@ -103,7 +174,7 @@
   text-shadow: 2px 2px 2px black;
 }
 
-.UICardHand-points-l {
+.UICard-points-l {
   position:absolute;
   top:50%;
   left:0;
@@ -111,7 +182,7 @@
   text-shadow: 2px 2px 2px black;
 }
 
-.UICardHand-points-r {
+.UICard-points-r {
   position:absolute;
   top:50%;
   right:0;
@@ -119,7 +190,7 @@
   text-shadow: 2px 2px 2px black;
 }
 
-.UICardHand-points-b {
+.UICard-points-b {
   position:absolute;
   bottom:0;
   left:50%;
@@ -128,90 +199,78 @@
 }
 
 /*---------------------------------------------------------------------------------------------*/
-/* UI AVATAR
+/* UI HANDS
 /*---------------------------------------------------------------------------------------------*/
-.UIAvatar {
-  display: block;
+.UIHands {
   position: absolute;
-  z-index: 11;
-  opacity: 0;
+  inset: 0 0 0 0;
+  user-select: none;
+  pointer-events: none;
 }
 
-.UIAvatar.u-middle {
-  left: 50%;
-  bottom: 0;
-  transform: translate(-50%, 0);
-}
-
-.UIAvatar.u-left {
-  left: 0;
-  bottom: 0;
-  transform: translate(0%, 0%);
-}
-
-.UIAvatar.u-center {
-  left: 50%;
-  bottom: 50%;
-  transform: translate(-50%, 50%);
-}
-
-.UIAvatar.u-right {
-  right: 0;
-  bottom: 0;
-  transform: translate(0%, 0%);
-}
-
-@keyframes ui-avatar-fade-in {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes ui-avatar-fade-out {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-/*---------------------------------------------------------------------------------------------*/
-/* UI BACKGROUND
-/*---------------------------------------------------------------------------------------------*/
-.UIBackground {
-  display: block;
+.UIHands-left {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-size: cover;
+  top: 50px;
+  bottom:50px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.UIHands-right {
+  position: absolute;
+  top: 50px;
+  bottom:50px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.UIHands .UICard {
+  width:100px;
+  flex:1;
+  margin-top: -30px;
+}
+
+.UIHands .UICard.u-focused {
   z-index: 10;
-  opacity: 0;
 }
 
-@keyframes ui-background-fade-in {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
+.UIHands .UICard.u-focused::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-image: url(/samples/touhou-triple-triad/curseur.png);
+  background-size: cover;
 }
 
-@keyframes ui-background-fade-out {
-  0% {
+.UIHands-left .UICard.u-focused::before {
+  left: 110px;
+  top: 10px;
+}
+
+.UIHands-right .UICard.u-focused::before {
+  right: 110px;
+  top: 10px;
+}
+
+.UIHands .UICard.u-focused .UICard-picture:nth-child(1) {
+  box-shadow: 6px 8px 8px -4px #74ff52, -6px 0 8px -4px #74ff52;
+}
+
+.UIHands .UICard.u-focused .UICard-picture:nth-child(2) {
+  animation: blink 1.5s infinite;
+}
+
+/*---------------------------------------------------------------------------------------------*/
+/* ANIMATIONS
+/*---------------------------------------------------------------------------------------------*/
+@keyframes blink {
+  0%, 50%, 100% {
     opacity: 1;
   }
-
-  100% {
-    opacity: 0;
+  25%, 75% {
+    opacity: 0.7;
   }
 }

@@ -36,7 +36,7 @@ export const PIPELINE_DESC: any = {
   }
 };
 
-export const VERTEX_SHADER = `
+export const VERTEX_SHADER = /* wgsl */`
 @binding(0) @group(0) var<uniform> MVPC_MATRIX: mat4x4<f32>;
 
 struct VertexOutput {
@@ -55,7 +55,7 @@ fn main(
   return output;
 }`;
 
-export const FRAGMENT_SHADER = `
+export const FRAGMENT_SHADER = /* wgsl */`
 @fragment
 fn main(
   @location(0) Color: vec3<f32>

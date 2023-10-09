@@ -14,13 +14,21 @@ interface JASAnimation {
   frameDuration: number;
 };
 
+/**
+ * The `Gfx3SpriteJAS` is a subclass of `Gfx3Sprite` that represents a animated sprite.
+ */
 class Gfx3SpriteJAS extends Gfx3Sprite {
   animations: Array<JASAnimation>;
   currentAnimation: JASAnimation | null;
   currentAnimationFrameIndex: number;
   looped: boolean;
   frameProgress: number;
+  offsetXFactor: number;
+  offsetYFactor: number;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     super();
     this.animations = [];
@@ -28,8 +36,14 @@ class Gfx3SpriteJAS extends Gfx3Sprite {
     this.currentAnimationFrameIndex = 0;
     this.looped = false;
     this.frameProgress = 0;
+    this.offsetXFactor = 0;
+    this.offsetYFactor = 0;
   }
 
+  /**
+   * The "loadFromFile" function asynchronously loads animated sprite data from a json file (jas).
+   * @param {string} path - The `path` parameter is the file path.
+   */
   async loadFromFile(path: string): Promise<void> {
     const response = await fetch(path);
     const json = await response.json();
@@ -63,6 +77,9 @@ class Gfx3SpriteJAS extends Gfx3Sprite {
     this.frameProgress = 0;
   }
 
+  /**
+   * The "update" function.
+   */
   update(ts: number): void {
     if (!this.currentAnimation || !this.texture) {
       return;
@@ -81,6 +98,11 @@ class Gfx3SpriteJAS extends Gfx3Sprite {
     const fuy = this.flip[1] ? 1 - uy : uy;
     const fvx = this.flip[0] ? 1 - vx : vx;
     const fvy = this.flip[1] ? 1 - vy : vy;
+
+    if (this.offsetXFactor != 0 || this.offsetYFactor != 0) {
+      this.offset[0] = currentFrame.width * this.offsetXFactor;
+      this.offset[1] = currentFrame.height * this.offsetYFactor;
+    }
 
     this.beginVertices(6);
     this.defineVertex(minX, maxY, 0, fux, fuy);
@@ -107,6 +129,15 @@ class Gfx3SpriteJAS extends Gfx3Sprite {
     }
   }
 
+  /**
+   * The "play" function is used to start playing a specific animation, with options for looping and
+   * preventing the same animation from being played again.
+   * @param {string} animationName - The name of the animation to be played.
+   * @param {boolean} [looped=false] - The `looped` parameter is a boolean that determines whether
+   * the animation should loop or not.
+   * @param {boolean} [preventSameAnimation=false] - The `preventSameAnimation` parameter is a boolean
+   * flag that determines whether the same animation should be prevented from playing again.
+   */
   play(animationName: string, looped: boolean = false, preventSameAnimation: boolean = false): void {
     if (preventSameAnimation && this.currentAnimation && animationName == this.currentAnimation.name) {
       return;
@@ -123,34 +154,47 @@ class Gfx3SpriteJAS extends Gfx3Sprite {
     this.frameProgress = 0;
   }
 
+  /**
+   * The "getAnimations" function returns an array of animation descriptors.
+   * @returns An array of animation descriptors.
+   */
   getAnimations(): Array<JASAnimation> {
     return this.animations;
   }
 
+  /**
+   * The "setAnimations" function sets the animations property.
+   * @param animations - The `animations` parameter is an array of animation descriptors.
+   */
   setAnimations(animations: Array<JASAnimation>): void {
     this.animations = animations;
   }
 
+  /**
+   * The "getCurrentAnimation" function returns the current animation or null if there is no current
+   * animation.
+   * @returns The current animation or null.
+   */
   getCurrentAnimation(): JASAnimation | null {
     return this.currentAnimation;
   }
 
+  /**
+   * The "getCurrentAnimationFrameIndex" function returns the current animation frame index.
+   * @returns The current animation frame index.
+   */
   getCurrentAnimationFrameIndex(): number {
     return this.currentAnimationFrameIndex;
   }
 
+  /**
+   * The "setOffsetNormalized" function sets the normalized origin offset value.
+   * @param {number} offsetXFactor - The offsetXFactor represent the normalized x-coordinate offset value.
+   * @param {number} offsetYFactor - The offsetYFactor represent the normalized y-coordinate offset value.
+   */
   setOffsetNormalized(offsetXFactor: number, offsetYFactor: number) {
-    if (!this.currentAnimation) {
-      return;
-    }
-
-    const currentFrame = this.currentAnimation.frames[this.currentAnimationFrameIndex];
-    if (!currentFrame) {
-      return;
-    }
-
-    this.offset[0] = currentFrame.width * offsetXFactor;
-    this.offset[1] = currentFrame.height * offsetYFactor;
+    this.offsetXFactor = offsetXFactor;
+    this.offsetYFactor = offsetYFactor;
   }
 }
 

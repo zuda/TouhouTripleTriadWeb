@@ -16,27 +16,6 @@ class UT {
   static VEC3_RIGHT: vec3 = [1, 0, 0];
   static VEC3_UP: vec3 = [0, 1, 0];
   static VEC3_DOWN: vec3 = [0, -1, 0];
-  static VEC4_SIZE = 16;
-  static VEC5_SIZE = 20;
-  static VEC6_SIZE = 24;
-  static MAT3_SIZE = 36;
-  static MAT4_SIZE = 64;
-  static F01_SIZE = 4;
-  static F02_SIZE = 8;
-  static F03_SIZE = 12;
-  static F04_SIZE = 16;
-  static F05_SIZE = 20;
-  static F06_SIZE = 24;
-  static F07_SIZE = 28;
-  static F08_SIZE = 32;
-  static F09_SIZE = 36;
-  static F10_SIZE = 40;
-  static F11_SIZE = 44;
-  static F12_SIZE = 48;
-  static F13_SIZE = 52;
-  static F14_SIZE = 56;
-  static F15_SIZE = 60;
-  static F16_SIZE = 64;
 
   static FAIL(message: string) {
     const elem = document.querySelector<HTMLDivElement>('#APP_FAIL')!;
@@ -78,6 +57,10 @@ class UT {
     return UT.SHUFFLE(arr);
   }
 
+  static SPREAD(base: number, spread: number): number {
+    return base + spread * (Math.random() - 0.5);
+  }
+
   static GET_RANDOM_INT(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -106,10 +89,19 @@ class UT {
   }
 
   /**************************************************************************/
+  /* VEC1 */
+  /**************************************************************************/
+
+  static VEC1_COPY(src: number, out: vec1 = [0]): vec1 {
+    out[0] = src;
+    return out;
+  }
+
+  /**************************************************************************/
   /* VEC2 */
   /**************************************************************************/
 
-  static VEC2_CREATE(x: number = 0, y: number = 0): vec2_buf {
+  static VEC2_CREATE(x: number = 0, y: number = 0): Float32Array {
     const out = new Float32Array(2);
     out[0] = x;
     out[1] = y;
@@ -123,9 +115,15 @@ class UT {
     return out;
   }
 
-  static VEC2_SET(v: vec2, x: number, y: number): void {
-    v[0] = x;
-    v[1] = y;
+  static VEC2_COPY(src: vec2, out: vec2 = [0, 0]): vec2 {
+    out[0] = src[0];
+    out[1] = src[1];
+    return out;
+  }
+
+  static VEC2_SPREAD(base: vec2, spread: vec2): vec2 {
+    const rand2 = UT.VEC2_CREATE(Math.random() - 0.5, Math.random() - 0.5);
+    return UT.VEC2_ADD(base, UT.VEC2_MULTIPLY(spread, rand2));
   }
 
   static VEC2_OPPOSITE(a: vec2, out: vec2 = [0, 0]): vec2 {
@@ -160,6 +158,12 @@ class UT {
 
   static VEC2_CROSS(a: vec2, b: vec2): number {
     return a[0] * b[1] - a[1] * b[0];
+  }
+
+  static VEC2_ORIENTATION(p: vec2, q: vec2, r: vec2): number {
+    const val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]);
+    if (val == 0) return 0; // collinear
+    return (val > 0) ? 1 : 2; // clock or counterclock wise
   }
 
   static VEC2_ADD(a: vec2, b: vec2, out: vec2 = [0, 0]): vec2 {
@@ -223,7 +227,7 @@ class UT {
   /* VEC3 */
   /**************************************************************************/
 
-  static VEC3_CREATE(x: number = 0, y: number = 0, z: number = 0): vec3_buf {
+  static VEC3_CREATE(x: number = 0, y: number = 0, z: number = 0): Float32Array {
     const out = new Float32Array(3);
     out[0] = x;
     out[1] = y;
@@ -239,10 +243,16 @@ class UT {
     return out;
   }
 
-  static VEC3_SET(v: vec3, x: number, y: number, z: number): void {
-    v[0] = x;
-    v[1] = y;
-    v[2] = z;
+  static VEC3_COPY(src: vec3, out: vec3 = [0, 0, 0]): vec3 {
+    out[0] = src[0];
+    out[1] = src[1];
+    out[2] = src[2];
+    return out;
+  }
+
+  static VEC3_SPREAD(base: vec3, spread: vec3): vec3 {
+    const rand3 = UT.VEC3_CREATE(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
+    return UT.VEC3_ADD(base, UT.VEC3_MULTIPLY(spread, rand3));
   }
 
   static VEC3_OPPOSITE(a: vec3, out: vec3 = [0, 0, 0]): vec3 {
@@ -336,7 +346,7 @@ class UT {
   /* VEC4 */
   /**************************************************************************/
 
-  static VEC4_CREATE(x: number = 0, y: number = 0, z: number = 0, w: number = 0): vec4_buf {
+  static VEC4_CREATE(x: number = 0, y: number = 0, z: number = 0, w: number = 0): Float32Array {
     const out = new Float32Array(4);
     out[0] = x;
     out[1] = y;
@@ -354,11 +364,12 @@ class UT {
     return out;
   }
 
-  static VEC4_SET(v: vec4, x: number, y: number, z: number, w: number): void {
-    v[0] = x;
-    v[1] = y;
-    v[2] = z;
-    v[3] = w;
+  static VEC4_COPY(src: vec4, out: vec4 = [0, 0, 0, 0]): vec4 {
+    out[0] = src[0];
+    out[1] = src[1];
+    out[2] = src[2];
+    out[3] = src[3];
+    return out;
   }
 
   /**************************************************************************/
@@ -427,7 +438,7 @@ class UT {
   /* QUATERNION */
   /**************************************************************************/
 
-  static QUATERNION_CREATE(x: number = 0, y: number = 0, z: number = 0, w: number = 1): vec4_buf {
+  static QUATERNION_CREATE(x: number = 0, y: number = 0, z: number = 0, w: number = 1): Float32Array {
     const out = new Float32Array(4);
     out[0] = x;
     out[1] = y;
@@ -496,7 +507,7 @@ class UT {
   /* MAT3 */
   /**************************************************************************/
 
-  static MAT3_CREATE(): mat3_buf {
+  static MAT3_CREATE(): Float32Array {
     const out = new Float32Array(9);
     out[0] = 1;
     out[1] = 0;
@@ -510,8 +521,20 @@ class UT {
     return out;
   }
 
-  static MAT3_FROM_ROTATION_QUATERNION(quaternion: vec4, out: mat3 = this.MAT3_CREATE()) {
+  static MAT3_COPY(src: mat3, out: mat3): mat3 {
+    out[0] = src[0];
+    out[1] = src[1];
+    out[2] = src[2];
+    out[3] = src[3];
+    out[4] = src[4];
+    out[5] = src[5];
+    out[6] = src[6];
+    out[7] = src[7];
+    out[8] = src[8];
+    return out;
+  }
 
+  static MAT3_FROM_ROTATION_QUATERNION(quaternion: vec4, out: mat3 = UT.MAT3_IDENTITY()) {
     const x = quaternion[0], y = quaternion[1], z = quaternion[2], w = quaternion[3];
     const x2 = x + x, y2 = y + y, z2 = z + z;
     const xx = x * x2, xy = x * y2, xz = x * z2;
@@ -522,18 +545,15 @@ class UT {
     out[1] = (xy + wz) * 1.0;
     out[2] = (xz - wy) * 1.0;
 
-
     out[3] = (xy - wz) * 1.0;
     out[4] = (1 - (xx + zz)) * 1.0;
     out[5] = (yz + wx) * 1.0;
-
 
     out[6] = (xz + wy) * 1.0;
     out[7] = (yz - wx) * 1.0;
     out[8] = (1 - (xx + yy)) * 1.0;
 
-
-    return this;
+    return out;
   }
 
   static MAT3_MULTIPLY_BY_VEC3(a: mat3, v: vec3, out: vec3 = [0, 0, 0]): vec3 {
@@ -716,7 +736,7 @@ class UT {
   /* MAT4 */
   /**************************************************************************/
 
-  static MAT4_CREATE(): mat3_buf {
+  static MAT4_CREATE(): Float32Array {
     const out = new Float32Array(16);
     out[0] = 1;
     out[1] = 0;
@@ -734,6 +754,26 @@ class UT {
     out[13] = 0;
     out[14] = 0;
     out[15] = 1;
+    return out;
+  }
+
+  static MAT4_COPY(src: mat4, out: mat4): mat4 {
+    out[0] = src[0];
+    out[1] = src[1];
+    out[2] = src[2];
+    out[3] = src[3];
+    out[4] = src[4];
+    out[5] = src[5];
+    out[6] = src[6];
+    out[7] = src[7];
+    out[8] = src[8];
+    out[9] = src[9];
+    out[10] = src[10];
+    out[11] = src[11];
+    out[12] = src[12];
+    out[13] = src[13];
+    out[14] = src[14];
+    out[15] = src[15];
     return out;
   }
 
@@ -1038,13 +1078,13 @@ class UT {
     return out;
   }
 
-  static MAT4_ORTHOGRAPHIC(size: number, depth: number, out: mat4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]): mat4 {
-    out[0] = 2 / size;
+  static MAT4_ORTHOGRAPHIC(width: number, height: number, depth: number, out: mat4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]): mat4 { // @todo: add width & height
+    out[0] = 2 / width;
     out[1] = 0;
     out[2] = 0;
     out[3] = 0;
     out[4] = 0;
-    out[5] = 2 / size;
+    out[5] = 2 / height;
     out[6] = 0;
     out[7] = 0;
     out[8] = 0;
@@ -1054,6 +1094,26 @@ class UT {
     out[12] = 0;
     out[13] = 0;
     out[14] = 0;
+    out[15] = 1;
+    return out;
+  }
+
+  static MAT4_ORTHO(left: number, right: number, bottom: number, top: number, near: number, far: number, out: mat4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]): mat4 {
+    out[0] = 2 / (right - left);
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = 2 / (top - bottom);
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 0;
+    out[9] = 0;
+    out[10] = 2 / (near - far);
+    out[11] = 0;
+    out[12] = (left + right) / (left - right);
+    out[13] = (bottom + top) / (bottom - top);
+    out[14] = (near + far) / (near - far);
     out[15] = 1;
     return out;
   }
@@ -1197,6 +1257,14 @@ class UT {
       (min1[1] <= max2[1] && max1[1] >= min2[1]) &&
       (min1[2] <= max2[2] && max1[2] >= min2[2])
     );
+  }
+
+  static COLLIDE_LINE_TO_LINE(p1: vec2, q1: vec2, p2: vec2, q2: vec2): boolean {
+    let o1 = UT.VEC2_ORIENTATION(p1, q1, p2);
+    let o2 = UT.VEC2_ORIENTATION(p1, q1, q2);
+    let o3 = UT.VEC2_ORIENTATION(p2, q2, p1);
+    let o4 = UT.VEC2_ORIENTATION(p2, q2, q1);
+    return o1 != o2 && o3 != o4;
   }
 
   /**************************************************************************/
@@ -1357,35 +1425,130 @@ class UT {
   /* t and d can be in frames or seconds/milliseconds */
   /**************************************************************************/
 
-  static LINEAR(t: number, b: number, e: number, d: number): number {
+  static LINEAR(t: number, b: number, e: number, d: number = 1): number {
     return b + (e - b) * t / d;
   }
 
-  static EASE_IN_QUAD(t: number, b: number, e: number, d: number): number {
+  static EASE_IN_QUAD(t: number, b: number, e: number, d: number = 1): number {
     return (e - b) * (t /= d) * t + b;
   }
 
-  static EASE_OUT_QUAD(t: number, b: number, e: number, d: number): number {
+  static EASE_OUT_QUAD(t: number, b: number, e: number, d: number = 1): number {
     const c = e - b;
     return -c * (t /= d) * (t - 2) + b;
   }
 
-  static EASE_IN_OUT_QUAD(t: number, b: number, e: number, d: number): number {
+  static EASE_IN_OUT_QUAD(t: number, b: number, e: number, d: number = 1): number {
     const c = e - b;
     if ((t /= d / 2) < 1) return c / 2 * t * t + b;
     return -c / 2 * ((--t) * (t - 2) - 1) + b;
   }
 
-  static LINEAR_VEC2(t: number, b: vec2, e: vec2, d: number): vec2 {
+  static LINEAR_VEC2(t: number, b: vec2, e: vec2, d: number = 1): vec2 {
     const c = UT.VEC2_SUBSTRACT(e, b);
     const p = t / d;
     return [b[0] + c[0] * p, b[1] + c[1] * p];
   }
 
-  static LINEAR_VEC3(t: number, b: vec3, e: vec3, d: number): vec3 {
+  static LINEAR_VEC3(t: number, b: vec3, e: vec3, d: number = 1): vec3 {
     const c = UT.VEC3_SUBSTRACT(e, b);
     const p = t / d;
     return [b[0] + c[0] * p, b[1] + c[1] * p, b[2] + c[2] * p];
+  }
+
+  /**************************************************************************/
+  /* CATMULL ROM */
+  /* t: normalized value (0;1) */
+  /**************************************************************************/
+
+  static CATMULL_ROM_VEC2(points: Array<vec2>, t: number) {
+    const i = Math.floor(t);
+    const p0 = points[i];
+    const p1 = points[i + 1];
+    const p2 = points[i + 2];
+    const p3 = points[i + 3];
+
+    const remainderT = t - Math.floor(t);
+
+    const q0 = (-1 * remainderT ** 3) + (2 * remainderT ** 2) + (-1 * remainderT);
+    const q1 = (3 * remainderT ** 3) + (-5 * remainderT ** 2) + 2;
+    const q2 = (-3 * remainderT ** 3) + (4 * remainderT ** 2) + remainderT;
+    const q3 = remainderT ** 3 - remainderT ** 2;
+
+    return [
+      0.5 * ((p0[0] * q0) + (p1[0] * q1) + (p2[0] * q2) + (p3[0] * q3)),
+      0.5 * ((p0[1] * q0) + (p1[1] * q1) + (p2[1] * q2) + (p3[1] * q3)),
+    ];
+  }
+
+  static CATMULL_ROM_VEC3(points: Array<vec3>, t: number) {
+    const i = Math.floor(t);
+    const p0 = points[i];
+    const p1 = points[i + 1];
+    const p2 = points[i + 2];
+    const p3 = points[i + 3];
+
+    const remainderT = t - Math.floor(t);
+
+    const q0 = (-1 * remainderT ** 3) + (2 * remainderT ** 2) + (-1 * remainderT);
+    const q1 = (3 * remainderT ** 3) + (-5 * remainderT ** 2) + 2;
+    const q2 = (-3 * remainderT ** 3) + (4 * remainderT ** 2) + remainderT;
+    const q3 = remainderT ** 3 - remainderT ** 2;
+
+    return [
+      0.5 * ((p0[0] * q0) + (p1[0] * q1) + (p2[0] * q2) + (p3[0] * q3)),
+      0.5 * ((p0[1] * q0) + (p1[1] * q1) + (p2[1] * q2) + (p3[1] * q3)),
+      0.5 * ((p0[2] * q0) + (p1[2] * q1) + (p2[2] * q2) + (p3[2] * q3))
+    ];
+  }
+
+  static CATMULL_ROM_GRADIENT_VEC2(points: Array<vec3>, t: number) {
+    const i = Math.floor(t);
+    const p0 = points[i];
+    const p1 = points[i + 1];
+    const p2 = points[i + 2];
+    const p3 = points[i + 3];
+
+    if (points.length <= i + 3) { //out of bounds then clamp
+      return points[points.length - 2];
+    }
+
+    const remainderT = t - i;
+
+    const q0 = (-3 * remainderT ** 2) + (4 * remainderT) - 1;
+    const q1 = (9 * remainderT ** 2) + (-10 * remainderT);
+    const q2 = (-9 * remainderT ** 2) + (8 * remainderT) + 1;
+    const q3 = (3 * remainderT ** 2) - (2 * remainderT);
+
+    return [
+      0.5 * ((p0[0] * q0) + (p1[0] * q1) + (p2[0] * q2) + (p3[0] * q3)),
+      0.5 * ((p0[1] * q0) + (p1[1] * q1) + (p2[1] * q2) + (p3[1] * q3))
+    ];
+  }
+
+  static CATMULL_ROM_GRADIENT_VEC3(points: Array<vec3>, t: number) {
+    const i = Math.floor(t);
+    const p0 = points[i];
+    const p1 = points[i + 1];
+    const p2 = points[i + 2];
+    const p3 = points[i + 3];
+
+    if (points.length <= i + 3) { //out of bounds then clamp
+      return points[points.length - 2];
+    }
+
+    const remainderT = t - i;
+
+    const q0 = (-3 * remainderT ** 2) + (4 * remainderT) - 1;
+    const q1 = (9 * remainderT ** 2) + (-10 * remainderT);
+    const q2 = (-9 * remainderT ** 2) + (8 * remainderT) + 1;
+    const q3 = (3 * remainderT ** 2) - (2 * remainderT);
+
+    return [
+      0.5 * ((p0[0] * q0) + (p1[0] * q1) + (p2[0] * q2) + (p3[0] * q3)),
+      0.5 * ((p0[1] * q0) + (p1[1] * q1) + (p2[1] * q2) + (p3[1] * q3)),
+      0.5 * ((p0[2] * q0) + (p1[2] * q1) + (p2[2] * q2) + (p3[2] * q3))
+    ];
   }
 }
 

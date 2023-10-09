@@ -1,8 +1,9 @@
+import { coreManager } from '../core/core_manager';
+import { eventManager } from '../core/event_manager';
 import { UT } from '../core/utils';
 import { Gfx3View } from './gfx3_view';
 import { Gfx3Texture } from './gfx3_texture';
-
-export const MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT = 256;
+import { Gfx3StaticGroup, Gfx3DynamicGroup } from './gfx3_group';
 
 export interface VertexSubBuffer {
   vertices: Float32Array;
@@ -10,118 +11,9 @@ export interface VertexSubBuffer {
   changed: boolean;
 };
 
-export class UniformGroupBitmaps {
-  device: GPUDevice;
-  pipeline: GPURenderPipeline;
-  groupIndex: number;
-  inputs: Array<GPUBindGroupEntry>;
-  bindGroup: GPUBindGroup | null;
-
-  constructor(device: GPUDevice, pipeline: GPURenderPipeline, groupIndex: number) {
-    this.device = device;
-    this.pipeline = pipeline;
-    this.groupIndex = groupIndex;
-    this.inputs = [];
-    this.bindGroup = null;
-  }
-
-  addSamplerInput(index: number, sampler: GPUSampler): void {
-    this.inputs[index] = { binding: index, resource: sampler };
-  }
-
-  addTextureInput(index: number, texture: GPUTexture, createViewDescriptor: GPUTextureViewDescriptor = {}): void {
-    this.inputs[index] = { binding: index, resource: texture.createView(createViewDescriptor) };
-  }
-
-  setSamplerInput(index: number, sampler: GPUSampler): void {
-    this.inputs[index] = { binding: index, resource: sampler };
-  }
-
-  setTextureInput(index: number, texture: GPUTexture, createViewDescriptor: GPUTextureViewDescriptor = {}): void {
-    this.inputs[index] = { binding: index, resource: texture.createView(createViewDescriptor) };
-  }
-
-  allocate(): void {
-    this.bindGroup = this.device.createBindGroup({ layout: this.pipeline.getBindGroupLayout(this.groupIndex), entries: this.inputs });
-  }
-
-  getBindGroup(): GPUBindGroup {
-    return this.bindGroup!;
-  }
-}
-
-export class UniformGroupDataset {
-  device: GPUDevice;
-  pipeline: GPURenderPipeline;
-  groupIndex: number;
-  buffer: GPUBuffer;
-  bufferWriteOffset: number;
-  inputs: Array<{ index: number, size: number }>;
-  storeBindGroups: Array<GPUBindGroup>;
-  size: number;
-
-  constructor(device: GPUDevice, pipeline: GPURenderPipeline, groupIndex: number) {
-    this.device = device;
-    this.pipeline = pipeline;
-    this.groupIndex = groupIndex;
-    this.buffer = device.createBuffer({ size: 16 * 4, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-    this.bufferWriteOffset = 0;
-    this.inputs = [];
-    this.storeBindGroups = [];
-    this.size = 0;
-  }
-
-  destroy(): void {
-    this.buffer.destroy();
-    this.storeBindGroups = [];
-  }
-
-  addInput(index: number, byteLength: number, name: string): void {
-    this.inputs[index] = { index: index, size: byteLength };
-  }
-
-  allocate(size: number = 1): void {
-    let offset = 0;
-    this.storeBindGroups = [];
-    this.buffer.destroy();
-    this.buffer = this.device.createBuffer({ size: size * this.inputs.length * MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-
-    for (let i = 0; i < size; i++) {
-      const entries: Array<GPUBindGroupEntry> = [];
-
-      for (const input of this.inputs) {
-        entries[input.index] = { binding: input.index, resource: { buffer: this.buffer, offset: offset, size: input.size } };
-        offset += MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT;
-      }
-
-      this.storeBindGroups.push(this.device.createBindGroup({ layout: this.pipeline.getBindGroupLayout(this.groupIndex), entries: entries }));
-    }
-
-    this.size = size;
-  }
-
-  beginWrite(): void {
-    this.bufferWriteOffset = 0;
-  }
-
-  write(index: number, data: Float32Array): void {
-    this.device.queue.writeBuffer(this.buffer, this.bufferWriteOffset, data);
-    this.bufferWriteOffset += MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT;
-  }
-
-  endWrite(): void {
-    this.bufferWriteOffset = 0;
-  }
-
-  getBindGroup(groupIndex: number = 0): GPUBindGroup {
-    return this.storeBindGroups[groupIndex];
-  }
-
-  getSize(): number {
-    return this.size;
-  }
-}
-
+/**
+ * The `Gfx3Manager` class is a singleton responsible for render all graphics stuff in a 3D graphics system.
+ */
 class Gfx3Manager {
   adapter: GPUAdapter;
   device: GPUDevice;
@@ -140,6 +32,9 @@ class Gfx3Manager {
   lastRenderStart: number;
   lastRenderTime: number;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     this.adapter = {} as GPUAdapter;
     this.device = {} as GPUDevice;
@@ -159,6 +54,11 @@ class Gfx3Manager {
     this.lastRenderTime = 0;
   }
 
+  /**
+   * The "initialize" function initializes the WebGPU rendering context, checks for browser support,
+   * requests the adapter and device, configures the canvas, creates a depth texture and vertex buffer,
+   * and subscribes to a window resize event.
+   */
   async initialize() {
     if (!navigator.gpu) {
       UT.FAIL('This browser does not support webgpu');
@@ -206,9 +106,15 @@ class Gfx3Manager {
     this.depthView = this.depthTexture.createView();
     this.vertexBuffer = this.device.createBuffer({ size: 0, usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
 
-    window.addEventListener('resize', this.handleWindowResize.bind(this));
+    eventManager.subscribe(coreManager, 'E_RESIZE', this, this.handleWindowResize);
   }
 
+  /**
+   * The "beginDrawing" function prepare the rendering environment for a specific view.
+   * Warning: You need to call this method before your draw calls.
+   * @param {number} viewIndex - The `viewIndex` parameter is the index of the view that you want to
+   * begin drawing. It is used to retrieve the corresponding view object from the `views` array.
+   */
   beginDrawing(viewIndex: number): void {
     const view = this.views[viewIndex];
     const viewport = view.getViewport();
@@ -242,6 +148,10 @@ class Gfx3Manager {
     this.passEncoder = passEncoder;
   }
 
+  /**
+   * The "endDrawing" function close the drawing phase.
+   * Warning: You need to call this method after your draw calls.
+   */
   endDrawing() {
     if (this.vertexSubBuffersSize > 0 && this.vertexSubBuffersSize != this.vertexBuffer.size) {
       this.vertexBuffer.destroy();
@@ -263,16 +173,39 @@ class Gfx3Manager {
     }
   }
 
+  /**
+   * The "beginRender" function prepare the rendering phase.
+   * Warning: You need to call this method before your render calls.
+   */
   beginRender(): void {
     this.lastRenderStart = Date.now();
   }
 
+  /**
+   * The "endRender" function ends the rendering process, submits the command encoder to the device
+   * queue, and calculates the time taken for the rendering.
+   * Warning: You need to call this method after your render calls.
+   */
   endRender(): void {
     this.passEncoder.end();
     this.device.queue.submit([this.commandEncoder.finish()]);
     this.lastRenderTime = Date.now() - this.lastRenderStart;
   }
 
+  /**
+   * The "loadPipeline" function creates and returns a GPU render pipeline using the provided vertex and
+   * fragment shaders, and caches it for future use.
+   * @param {string} id - A unique identifier for the render pipeline.
+   * @param {string} vertexShader - The `vertexShader` parameter is a string that represents the code for
+   * the vertex shader.
+   * @param {string} fragmentShader - The `fragmentShader` parameter is a string that represents the code
+   * for the fragment shader.
+   * @param {GPURenderPipelineDescriptor} pipelineDesc - The `pipelineDesc` parameter is of type
+   * `GPURenderPipelineDescriptor` and it represents the description of the render pipeline that you want
+   * to create. It contains various properties that define the configuration of the pipeline, such as the
+   * vertex and fragment shaders, the color and depth formats, the primitive topology
+   * @returns The GPU render pipeline.
+   */
   loadPipeline(id: string, vertexShader: string, fragmentShader: string, pipelineDesc: GPURenderPipelineDescriptor): GPURenderPipeline {
     if (this.pipelines.has(id)) {
       return this.pipelines.get(id)!;
@@ -295,6 +228,12 @@ class Gfx3Manager {
     return pipeline;
   }
 
+  /**
+   * The "getPipeline" function returns a GPU render pipeline based on the provided ID, throwing an error
+   * if the pipeline is not found.
+   * @param {string} id - A string representing the ID of the pipeline to retrieve.
+   * @returns The GPU render pipeline.
+   */
   getPipeline(id: string): GPURenderPipeline {
     if (!this.pipelines.has(id)) {
       throw new Error('Gfx3Manager::getPipeline(): pipeline not found !');
@@ -303,6 +242,13 @@ class Gfx3Manager {
     return this.pipelines.get(id)!;
   }
 
+  /**
+   * The "createVertexBuffer" function creates a vertex sub-buffer of a specified size and returns it.
+   * Nota bene: A sub-buffer is just a reference offset/size pointing to the big one vertex buffer.
+   * @param {number} size - The `size` parameter represents the number of vertices that will be stored
+   * in the vertex sub-buffer.
+   * @returns The vertex sub-buffer.
+   */
   createVertexBuffer(size: number): VertexSubBuffer {
     const sub: VertexSubBuffer = {
       vertices: new Float32Array(size),
@@ -315,6 +261,10 @@ class Gfx3Manager {
     return sub;
   }
 
+  /**
+   * The "destroyVertexBuffer" function removes a given vertex sub-buffer.
+   * @param {VertexSubBuffer} sub - The vertex sub-buffer.
+   */
   destroyVertexBuffer(sub: VertexSubBuffer): void {
     const index = this.vertexSubBuffers.indexOf(sub);
     this.vertexSubBuffers.splice(index, 1);
@@ -328,19 +278,48 @@ class Gfx3Manager {
     this.vertexSubBuffersSize -= sub.vertices.byteLength;
   }
 
+  /**
+   * The "writeVertexBuffer" function takes a vertex sub-buffer and write on it.
+   * @param {VertexSubBuffer} sub - The vertex sub-buffer.
+   * @param vertices - The `vertices` parameter is an array of numbers representing the vertex data.
+   */
   writeVertexBuffer(sub: VertexSubBuffer, vertices: Array<number>): void {
     sub.vertices = new Float32Array(vertices);
     sub.changed = true;
   }
 
-  createUniformGroupDataset(pipelineId: string, groupIndex: number): UniformGroupDataset {
-    return new UniformGroupDataset(this.device, this.getPipeline(pipelineId), groupIndex);
+  /**
+   * The "createStaticGroup" function creates a static group for a given pipeline and group index.
+   * @param {string} pipelineId - The pipelineId is a string that represents the unique identifier of
+   * a pipeline.
+   * @param {number} groupIndex - The `groupIndex` parameter is the index of the uniform group in the shader.
+   * @returns A new instance of Gfx3StaticGroup.
+   */
+  createStaticGroup(pipelineId: string, groupIndex: number): Gfx3StaticGroup {
+    return new Gfx3StaticGroup(this.device, this.getPipeline(pipelineId), groupIndex);
   }
 
-  createUniformGroupBitmaps(pipelineId: string, groupIndex: number): UniformGroupBitmaps {
-    return new UniformGroupBitmaps(this.device, this.getPipeline(pipelineId), groupIndex);
+  /**
+   * The "createDynamicGroup" function creates a dynamic group for a given pipeline and group index.
+   * @param {string} pipelineId - The pipelineId is a string that represents the unique identifier of
+   * a pipeline.
+   * @param {number} groupIndex - The `groupIndex` parameter is the index of the uniform group in the shader.
+   * @returns A new instance of Gfx3DynamicGroup.
+   */
+  createDynamicGroup(pipelineId: string, groupIndex: number): Gfx3DynamicGroup {
+    return new Gfx3DynamicGroup(this.device, this.getPipeline(pipelineId), groupIndex);
   }
 
+  /**
+   * The "createTextureFromBitmap" function creates a GPU texture from a given bitmap image or canvas element.
+   * @param {ImageBitmap | HTMLCanvasElement} [bitmap] - The `bitmap` parameter can be either an
+   * `ImageBitmap` or an `HTMLCanvasElement`. It represents the source image from which the texture will
+   * be created.
+   * @param {boolean} [is8bit=false] - The `is8bit` parameter is a boolean flag that indicates whether
+   * the texture should be treated as an 8-bit texture or not. If `is8bit` is `true`, the texture format
+   * will be set to "r8unorm" (8-bit normalized format). If `is
+   * @returns The Gfx3Texture.
+   */
   createTextureFromBitmap(bitmap?: ImageBitmap | HTMLCanvasElement, is8bit: boolean = false): Gfx3Texture {
     if (!bitmap) {
       const canvas = document.createElement('canvas');
@@ -368,6 +347,14 @@ class Gfx3Manager {
     return { gpuTexture: gpuTexture, gpuSampler: gpuSampler };
   }
 
+  /**
+   * The "createCubeMapFromBitmap" function creates a cube map texture from an array of bitmaps or canvas
+   * elements.
+   * @param [bitmaps] - The `bitmaps` parameter is an array of `ImageBitmap` or `HTMLCanvasElement`
+   * objects. These objects represent the six faces of a cube map texture. Each face should have the same
+   * size.
+   * @returns The Gfx3Texture.
+   */
   createCubeMapFromBitmap(bitmaps?: Array<ImageBitmap | HTMLCanvasElement>): Gfx3Texture {
     if (!bitmaps || bitmaps.length == 0) {
       const canvas = document.createElement('canvas');
@@ -406,34 +393,83 @@ class Gfx3Manager {
     return { gpuTexture: cubemapTexture, gpuSampler: gpuSampler };
   }
 
+  /**
+   * The "getClientWidth" function returns the client width of the canvas.
+   * @returns The client width of the canvas.
+   */
+  getClientWidth(): number {
+    return this.canvas.clientWidth;
+  }
+
+  /**
+   * The "getClientHeight" function returns the client height of the canvas.
+   * @returns The client height of the canvas.
+   */
+  getClientHeight(): number {
+    return this.canvas.clientHeight;
+  }
+
+  /**
+   * The "getWidth" function returns the width of the canvas.
+   * @returns The width of the canvas.
+   */
   getWidth(): number {
     return this.canvas.width;
   }
 
+  /**
+   * The "getHeight" function returns the height of the canvas.
+   * @returns The height of the canvas.
+   */
   getHeight(): number {
     return this.canvas.height;
   }
 
+  /**
+   * The "getContext" function returns the GPUCanvasContext object.
+   * @returns The WebGPU canvas context.
+   */
   getContext(): GPUCanvasContext {
     return this.ctx;
   }
 
+  /**
+   * The "getDevice" function returns the GPU device.
+   * @returns The WebGPU device.
+   */
   getDevice(): GPUDevice {
     return this.device;
   }
 
+  /**
+   * The "getPassEncoder" function returns the GPURenderPassEncoder.
+   * @returns The WebGPU render pass encoder.
+   */
   getPassEncoder(): GPURenderPassEncoder {
     return this.passEncoder;
   }
 
+  /**
+   * The "getView" function returns the Gfx3View at the specified index.
+   * @param {number} index - The position of the view in views array.
+   * @returns The Gfx3View.
+   */
   getView(index: number): Gfx3View {
     return this.views[index];
   }
 
+  /**
+   * The "getNumViews" function returns the number of views.
+   * @returns The number of views.
+   */
   getNumViews(): number {
     return this.views.length;
   }
 
+  /**
+   * The "createView" function creates a new `Gfx3View` object.
+   * @returns A new instance of `Gfx3View`.
+   */
   createView(): Gfx3View {
     const view = new Gfx3View();
     view.setScreenSize(this.canvas.width, this.canvas.height);
@@ -441,30 +477,59 @@ class Gfx3Manager {
     return view;
   }
 
+  /**
+   * The "changeView" function change the view at a specified index in views array.
+   * @param {number} index - The position in the views array where the view should be changed.
+   * @param {Gfx3View} view - The view.
+   */
   changeView(index: number, view: Gfx3View): void {
     this.views[index] = view;
   }
 
+  /**
+   * The "removeView" function removes a specified view in views array.
+   * @param {Gfx3View} view - The view.
+   */
   removeView(view: Gfx3View): void {
     this.views.splice(this.views.indexOf(view), 1);
   }
 
+  /**
+   * The "releaseViews" function delete all views.
+   */
   releaseViews(): void {
     this.views = [];
   }
 
+  /**
+   * The "getCurrentView" function returns the current view.
+   * Nota bene: current view is set by the "beginDraw" function. 
+   * @returns The current view.
+   */
   getCurrentView(): Gfx3View {
     return this.currentView;
   }
 
+  /**
+   * The "getVertexBuffer" function returns the big one vertex buffer.
+   * @returns The global vertex buffer.
+   */
   getVertexBuffer(): GPUBuffer {
     return this.vertexBuffer;
   }
 
+  /**
+   * The "getLastRenderTime" function returns the last render time.
+   * @returns The last render time.
+   */
   getLastRenderTime() {
     return this.lastRenderTime;
   }
 
+  /**
+   * The "handleWindowResize" function resizes the canvas, recreates the depth texture and view, and
+   * updates the screen size for each view.
+   */
   handleWindowResize(): void {
     const devicePixelRatio = window.devicePixelRatio || 1;
     this.canvas.width = this.canvas.clientWidth * devicePixelRatio;

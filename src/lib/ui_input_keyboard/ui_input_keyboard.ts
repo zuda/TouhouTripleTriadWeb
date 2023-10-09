@@ -4,11 +4,18 @@ import { UIWidget } from '../ui/ui_widget';
 const GRID_WIDTH = 10;
 const GRID_HEIGHT = 8;
 
+/**
+ * The `UIInputKeyboard` class represents a keyboard input widget.
+ * It emit 'E_VALUE_CHANGED' when value changed.
+ */
 class UIInputKeyboard extends UIWidget {
   value: string;
   row: number;
   column: number;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     super({
       className: 'UIInputKeyboard',
@@ -117,6 +124,9 @@ class UIInputKeyboard extends UIWidget {
     this.column = 0;
   }
 
+  /**
+   * The "focus" function.
+   */
   focus(): void {
     const items = this.node.querySelectorAll('.js-item');
     const item = items[this.row * GRID_WIDTH + this.column];  
@@ -124,6 +134,9 @@ class UIInputKeyboard extends UIWidget {
     super.focus();
   }
 
+  /**
+   * The "unfocus" function.
+   */
   unfocus(): void {
     const items = this.node.querySelectorAll('.js-item');
     const item = items[this.row * GRID_WIDTH + this.column];
@@ -131,6 +144,10 @@ class UIInputKeyboard extends UIWidget {
     super.unfocus();
   }
 
+  /**
+   * The "setValue" function sets the input value.
+   * @param {string} value - The `value` parameter is a string that represents the new value to be set.
+   */
   setValue(value: string): void {
     if (value == this.value) {
       return;
@@ -140,6 +157,10 @@ class UIInputKeyboard extends UIWidget {
     this.value = value;
   }
 
+  /**
+   * The "onAction" function.
+   * It emits an event with the name 'E_VALUE_CHANGED' if the actionId is 'OK'.
+   */
   onAction(actionId: string): void {
     if (actionId == 'UP') {
       this.$moveCursor('UP');

@@ -1,9 +1,10 @@
 import { gfx3ParticlesRenderer } from './gfx3_particles_renderer';
-import { gfx3Manager, UniformGroupBitmaps } from '../gfx3/gfx3_manager';
+import { gfx3Manager } from '../gfx3/gfx3_manager';
 import { UT } from '../core/utils';
 import { TweenNumber, TweenVEC3 } from '../core/tween';
 import { Gfx3Drawable } from '../gfx3/gfx3_drawable';
 import { Gfx3Texture } from '../gfx3/gfx3_texture';
+import { Gfx3StaticGroup } from '../gfx3/gfx3_group';
 import { SHADER_VERTEX_ATTR_COUNT } from './gfx3_particles_shader';
 
 const PARTICULES_UV = [[0, 0], [0, 1], [1, 0], [1, 1]];
@@ -123,9 +124,12 @@ interface ParticlesOptions {
   emitterDeathAge: number;
 };
 
+/**
+ * The `Gfx3Particles` class is a subclass of `Gfx2Drawable` that responsible for updating and
+ * rendering a particle system in 3D space with various properties such as position,
+ * velocity, size, opacity, acceleration, color, angle, and age.
+ */
 class Gfx3Particles extends Gfx3Drawable {
-  texture: Gfx3Texture;
-  textureBuffer: UniformGroupBitmaps;
   textureChanged: boolean;
   positionStyle: PositionStyle;
   positionBase: vec3;
@@ -163,16 +167,16 @@ class Gfx3Particles extends Gfx3Drawable {
   emitterDeathAge: number;
   emitterAge: number;
   emitterAlive: boolean;
+  grp2: Gfx3StaticGroup;
+  texture: Gfx3Texture;
 
+  /**
+   * The constructor.
+   * @param options - An object containing various options for configuring the behavior of the particles cloud.
+   */
   constructor(options: Partial<ParticlesOptions>) {
     super(SHADER_VERTEX_ATTR_COUNT);
-    this.texture = options.texture ?? gfx3Manager.createTextureFromBitmap();
-    this.textureBuffer = gfx3Manager.createUniformGroupBitmaps('PARTICLES_PIPELINE', 1);
-    this.textureBuffer.addSamplerInput(0, this.texture.gpuSampler);
-    this.textureBuffer.addTextureInput(1, this.texture.gpuTexture);
-    this.textureBuffer.allocate();
     this.textureChanged = false;
-
     this.positionStyle = options.positionStyle ?? PositionStyle.CUBE;
     this.positionBase = options.positionBase ?? [0, 0, 0];
     this.positionSpread = options.positionSpread ?? [0, 0, 0];
@@ -209,17 +213,38 @@ class Gfx3Particles extends Gfx3Drawable {
     this.emitterDeathAge = options.emitterDeathAge ?? 60;
     this.emitterAge = 0.0;
     this.emitterAlive = true;
+    this.grp2 = gfx3Manager.createStaticGroup('PARTICLES_PIPELINE', 2);
+    this.texture = this.grp2.setTexture(0, 'TEXTURE', options.texture ?? gfx3Manager.createTextureFromBitmap());
 
     for (let i = 0; i < this.particleQuantity; i++) {
       this.particleArray[i] = this.createParticle();
     }
+
+    this.grp2.allocate();
   }
 
+  /**
+   * The "delete" function free all resources.
+   * Warning: you need to call this method to free allocation for this object.
+   */
+  delete(): void {
+    this.grp2.destroy();
+    super.delete();
+  }
+
+  /**
+   * The "update" function.
+   * @param {number} ts - The `ts` parameter stands for "timestep".
+   */
   update(ts: number): void {
     this.updateLifeCycle(ts);
     this.updateGeometry(ts);
   }
 
+  /**
+   * The "updateLifeCycle" function.
+   * @param {number} ts - The `ts` parameter stands for "timestep".
+   */
   updateLifeCycle(ts: number): void {
     const recycleIndices = [];
 
@@ -265,6 +290,10 @@ class Gfx3Particles extends Gfx3Drawable {
     }
   }
 
+  /**
+   * The "updateGeometry" function.
+   * @param {number} ts - The `ts` parameter stands for "timestep".
+   */
   updateGeometry(ts: number): void {
     this.beginVertices(this.particleAlivedCount * 6);
 
@@ -288,18 +317,26 @@ class Gfx3Particles extends Gfx3Drawable {
     this.endVertices();
   }
 
+  /**
+   * The "draw" function.
+   */
   draw(): void {
     gfx3ParticlesRenderer.drawParticles(this);
   }
 
+  /**
+   * The "createParticle" function creates a particle with various properties such as position, velocity, size, opacity,
+   * acceleration, color, angle, and age.
+   * @returns a Particle object.
+   */
   createParticle(): Particle {
     const particle = new Particle();
 
     if (this.positionStyle == PositionStyle.CUBE) {
-      particle.position = RANDOM_VEC3(this.positionBase, this.positionSpread);
+      particle.position = UT.VEC3_SPREAD(this.positionBase, this.positionSpread);
     }
     else if (this.positionStyle == PositionStyle.SPHERE) {
-      const positionRadius = RANDOM_VALUE(this.positionSphereRadiusBase, this.positionRadiusSpread);
+      const positionRadius = UT.SPREAD(this.positionSphereRadiusBase, this.positionRadiusSpread);
       const a1 = Math.PI * 2 * Math.random();
       const a2 = Math.PI * 2 * Math.random();
       const r = positionRadius * Math.cos(a1);
@@ -307,63 +344,61 @@ class Gfx3Particles extends Gfx3Drawable {
     }
 
     if (this.velocityStyle == VelocityStyle.CLASSIC) {
-      particle.velocity = RANDOM_VEC3(this.velocityBase, this.velocitySpread);
+      particle.velocity = UT.VEC3_SPREAD(this.velocityBase, this.velocitySpread);
     }
     else if (this.velocityStyle == VelocityStyle.EXPLODE) {
       const direction = UT.VEC3_SUBSTRACT(particle.position, this.positionBase);
-      const velocitySpeed = RANDOM_VALUE(this.velocityExplodeSpeedBase, this.velocityExplodeSpeedSpread);
+      const velocitySpeed = UT.SPREAD(this.velocityExplodeSpeedBase, this.velocityExplodeSpeedSpread);
       particle.velocity = UT.VEC3_SCALE(UT.VEC3_NORMALIZE(direction), velocitySpeed);
     }
 
-    particle.color = RANDOM_VEC3(this.colorBase, this.colorSpread);
+    particle.color = UT.VEC3_SPREAD(this.colorBase, this.colorSpread);
     particle.colorTween = this.colorTween;
-    particle.size = RANDOM_VALUE(this.sizeBase, this.sizeSpread);
+    particle.size = UT.SPREAD(this.sizeBase, this.sizeSpread);
     particle.sizeTween = this.sizeTween;
-    particle.opacity = RANDOM_VALUE(this.opacityBase, this.opacitySpread);
+    particle.opacity = UT.SPREAD(this.opacityBase, this.opacitySpread);
     particle.opacityTween = this.opacityTween;
-    particle.acceleration = RANDOM_VEC3(this.accelerationBase, this.accelerationSpread);
+    particle.acceleration = UT.VEC3_SPREAD(this.accelerationBase, this.accelerationSpread);
     particle.accelerationTween = this.accelerationTween;
-    particle.angle = RANDOM_VALUE(this.angleBase, this.angleSpread);
-    particle.angleVelocity = RANDOM_VALUE(this.angleVelocityBase, this.angleVelocitySpread);
-    particle.angleAcceleration = RANDOM_VALUE(this.angleAccelerationBase, this.angleAccelerationSpread);
+    particle.angle = UT.SPREAD(this.angleBase, this.angleSpread);
+    particle.angleVelocity = UT.SPREAD(this.angleVelocityBase, this.angleVelocitySpread);
+    particle.angleAcceleration = UT.SPREAD(this.angleAccelerationBase, this.angleAccelerationSpread);
     particle.age = 0;
     particle.alive = 0;
     return particle;
   }
 
+  /**
+   * The "setTexture" function sets the particle texture.
+   * @param {Gfx3Texture} texture - The texture.
+   */
   setTexture(texture: Gfx3Texture): void {
     this.texture = texture;
     this.textureChanged = true;
   }
 
+  /**
+   * The "getTexture" function returns the particle texture.
+   * @returns The texture.
+   */
   getTexture(): Gfx3Texture | null {
     return this.texture;
   }
 
-  getTextureBuffer(): UniformGroupBitmaps {
+  /**
+   * The "getGroup02" function returns the static group index 2.
+   * @returns The static group.
+   */
+  getGroup02(): Gfx3StaticGroup {
     if (this.textureChanged) {
-      this.textureBuffer.setSamplerInput(0, this.texture.gpuSampler);
-      this.textureBuffer.setTextureInput(1, this.texture.gpuTexture);
-      this.textureBuffer.allocate();
+      this.grp2.setTexture(0, 'TEXTURE', this.texture);
+      this.grp2.allocate();
       this.textureChanged = false;
     }
 
-    return this.textureBuffer;
+    return this.grp2;
   }
 }
 
 export type { ParticlesOptions };
 export { VelocityStyle, PositionStyle, Gfx3Particles };
-
-// -------------------------------------------------------------------------------------------
-// HELPFUL
-// -------------------------------------------------------------------------------------------
-
-function RANDOM_VALUE(base: number, spread: number): number {
-  return base + spread * (Math.random() - 0.5);
-}
-
-function RANDOM_VEC3(base: vec3, spread: vec3): vec3 {
-  const rand3 = UT.VEC3_CREATE(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5);
-  return UT.VEC3_ADD(base, UT.VEC3_MULTIPLY(spread, rand3));
-}

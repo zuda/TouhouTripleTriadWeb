@@ -3,6 +3,9 @@ import { gfx3DebugRenderer } from '../gfx3/gfx3_debug_renderer';
 import { UT } from '../core/utils';
 import { Gfx3Transformable } from '../gfx3/gfx3_transformable';
 
+/**
+ * The `Gfx3Mover` class represents a mover object that can move a transformable target along a series of points.
+ */
 class Gfx3Mover {
   points: Array<vec3>;
   speed: number;
@@ -13,6 +16,9 @@ class Gfx3Mover {
   currentPointIndex: number;
   finished: boolean;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     this.points = [];
     this.speed = 1;
@@ -24,6 +30,10 @@ class Gfx3Mover {
     this.finished = false;
   }
 
+  /**
+   * The "loadFromData" function asynchronously loads mover data from a object.
+   * @param {string} data - The `data` parameter is the data object.
+   */
   async loadFromData(data: any): Promise<void> {
     this.points = [];
     for (const point of data['Points']) {
@@ -48,6 +58,10 @@ class Gfx3Mover {
     }
   }
 
+  /**
+   * The "update" function.
+   * @param {number} ts - The `ts` parameter stands for "timestep".
+   */
   update(ts: number): void {
     if (!this.target || this.finished) {
       return;
@@ -73,10 +87,16 @@ class Gfx3Mover {
     }
   }
 
+  /**
+   * The "draw" function.
+   */
   draw(): void {
     gfx3DebugRenderer.drawVertices(this.debugVertices, this.debugVertexCount, UT.MAT4_IDENTITY());
   }
 
+  /**
+   * The "play" function start moving the transformable target across the points.
+   */
   play(): void {
     if (this.points.length < 2) {
       throw new Error('Gfx3Mover::play(): points is not defined.');
@@ -90,6 +110,10 @@ class Gfx3Mover {
     this.finished = false;
   }
 
+  /**
+   * The "setTarget" function sets the transformable moving target.
+   * @param {Gfx3Transformable} target - The target.
+   */
   setTarget(target: Gfx3Transformable): void {
     this.target = target;
   }

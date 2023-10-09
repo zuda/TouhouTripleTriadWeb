@@ -1,6 +1,10 @@
 import { gfx2Manager } from '../gfx2/gfx2_manager';
 import { gfx2TextureManager } from '../gfx2/gfx2_texture_manager';
 
+/**
+ * The `Gfx2Map` class represents a map in a game and provides methods for loading map data, accessing
+ * map properties, and manipulating map tiles.
+ */
 class Gfx2Map {
   rows: number;
   columns: number;
@@ -9,6 +13,9 @@ class Gfx2Map {
   tileLayers: Array<Gfx2TileLayer>;
   tileset: Gfx2Tileset;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     this.rows = 0;
     this.columns = 0;
@@ -18,6 +25,10 @@ class Gfx2Map {
     this.tileset = new Gfx2Tileset();
   }
 
+  /**
+   * The "loadFromFile" function asynchronously loads map data from a json file.
+   * @param {string} path - The `path` parameter is the file path.
+   */
   async loadFromFile(path: string): Promise<void> {
     let response = await fetch(path);
     let json = await response.json();
@@ -41,59 +52,123 @@ class Gfx2Map {
     }
   }
 
+  /**
+   * The "getHeight" function returns the map height in pixels.
+   * @returns The map height in pixels.
+   */
   getHeight(): number {
     return this.rows * this.tileHeight;
   }
 
+  /**
+   * The "getWidth" function returns the width map in pixels.
+   * @returns The map width in pixels.
+   */
   getWidth(): number {
     return this.columns * this.tileWidth;
   }
 
+  /**
+   * The "getRows" function returns the number of rows.
+   * @returns The number of rows.
+   */
   getRows(): number {
     return this.rows;
   }
 
+  /**
+   * The "getColumns" function returns the number of columns.
+   * @returns The number of columns.
+   */
   getColumns(): number {
     return this.columns;
   }
 
+  /**
+   * The "getTileHeight" function returns the height of a tile.
+   * @returns The tile height.
+   */
   getTileHeight(): number {
     return this.tileHeight;
   }
 
+  /**
+   * The "getTileWidth" function returns the width of a tile.
+   * @returns The tile width.
+   */
   getTileWidth(): number {
     return this.tileWidth;
   }
 
+  /**
+   * The "getTileLayer" function returns the tile layer at the specified index.
+   * @param {number} index - The index of the tile layer.
+   * @returns The tile layer.
+   */
   getTileLayer(index: number): Gfx2TileLayer {
     return this.tileLayers[index];
   }
 
+  /**
+   * The "findTileLayer" function searches for a tile layer with a given name and returns it if found,
+   * otherwise it returns undefined.
+   * @param {string} name - The name of the tile layer that you want to find.
+   * @returns The tile layer.
+   */
   findTileLayer(name: string): Gfx2TileLayer | undefined {
     return this.tileLayers.find(tileLayer => tileLayer.getName() == name);
   }
 
+  /**
+   * The "getTileset" function returns the tileset.
+   * @returns The tileset.
+   */
   getTileset(): Gfx2Tileset {
     return this.tileset;
   }
 
+  /**
+   * The "getPositionX" function returns the x-coordinate position of a column on a grid.
+   * Origin is given at the top-left corner.
+   * @param {number} col - The parameter `col` represents the column number.
+   * @returns The x-coordinate position.
+   */
   getPositionX(col: number): number {
     return col * this.tileWidth;
   }
 
+  /**
+   * The "getPositionY" function returns the y-coordinate position of a row on a grid.
+   * Origin is given at the top-left corner.
+   * @param {number} row - The parameter `row` represents the column number.
+   * @returns The y-coordinate position.
+   */
   getPositionY(row: number): number {
     return row * this.tileHeight;
   }
 
+  /**
+   * The "getLocationCol" function returns the column number of a given x-coordinate.
+   * @param {number} x - The parameter `x` represents the x-coordinate of a point.
+   * @returns The column number.
+   */
   getLocationCol(x: number): number {
     return Math.floor(x / this.tileWidth);
   }
 
+  /**
+   * The "getLocationRow" function returns the row number of a given y-coordinate.
+   * @param {number} y - The parameter `y` represents the y-coordinate of a point.
+   * @returns The row number.
+   */
   getLocationRow(y: number): number {
     return Math.floor(y / this.tileHeight);
   }
 }
 
+/**
+ * The `Gfx2TileLayer` class represents a tile layer in a tilemap.
+ */
 class Gfx2TileLayer {
   name: string;
   rows: number;
@@ -102,6 +177,9 @@ class Gfx2TileLayer {
   frameDuration: number;
   grid: Array<number>;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     this.name = '';
     this.rows = 0;
@@ -111,6 +189,10 @@ class Gfx2TileLayer {
     this.grid = [];
   }
 
+  /**
+   * The "loadFromData" function loads tile layer data.
+   * @param {any} data - The `data` object.
+   */
   async loadFromData(data: any): Promise<void> {
     this.name = data['Name'];
     this.rows = data['Rows'];
@@ -120,35 +202,68 @@ class Gfx2TileLayer {
     this.grid = data['Grid'];
   }
 
+  /**
+   * The "getTile" function returns the tile at a specific position in a grid.
+   * @param {number} col - The column index.
+   * @param {number} row - The row index.
+   * @returns The tile.
+   */
   getTile(col: number, row: number) {
     return this.grid[col + (row * this.columns)];
   }
 
+  /**
+   * The "getName" function returns the name property.
+   * @returns The name property.
+   */
   getName(): string {
     return this.name;
   }
 
+  /**
+   * The "getRows" function returns the number of rows.
+   * @returns The number of rows.
+   */
   getRows(): number {
     return this.rows;
   }
 
+  /**
+   * The "getColumns" function returns the number of columns.
+   * @returns The number of columns.
+   */
   getColumns(): number {
     return this.columns;
   }
 
+  /**
+   * The "isVisible" function returns a boolean value indicating whether layer is visible or not.
+   * @returns The visible property.
+   */
   isVisible(): boolean {
     return this.visible;
   }
 
+  /**
+   * The "getFrameDuration" function returns the frame duration for animated tiles.
+   * @returns The frame duration.
+   */
   getFrameDuration(): number {
     return this.frameDuration;
   }
 
+  /**
+   * The "getGrid" function returns the map layer's grid.
+   * @returns An array of numbers representing tiles.
+   */
   getGrid(): Array<number> {
     return this.grid;
   }
 }
 
+/**
+ * The `Gfx2Tileset` class represents a tileset in a tilemap.
+ */
 class Gfx2Tileset {
   columns: number;
   tileWidth: number;
@@ -156,6 +271,9 @@ class Gfx2Tileset {
   texture: ImageBitmap | HTMLImageElement;
   animations: Map<number, Array<number>>;
 
+  /**
+   * The constructor.
+   */
   constructor() {
     this.columns = 0;
     this.tileWidth = 0;
@@ -164,6 +282,10 @@ class Gfx2Tileset {
     this.animations = new Map<number, Array<number>>;
   }
 
+  /**
+   * The "loadFromData" function loads tileset data.
+   * @param {any} data - The `data` object.
+   */
   async loadFromData(data: any): Promise<void> {
     this.columns = parseInt(data['Columns']);
     this.tileWidth = parseInt(data['TileWidth']);
@@ -176,30 +298,61 @@ class Gfx2Tileset {
     }
   }
 
+  /**
+   * The "getTilePositionX" function calculates the x-coordinate of a tile (tile index start at 1).
+   * @param {number} tileId - The tileId parameter is a number that represents the tile index number.
+   * @returns the x position of the tile.
+   */
   getTilePositionX(tileId: number): number {
     return ((tileId - 1) % this.columns) * this.tileWidth;
   }
 
+  /**
+   * The "getTilePositionY" function calculates the y-coordinate of a tile (tile index start at 1).
+   * @param {number} tileId - The tileId parameter is a number that represents the tile index number.
+   * @returns the y position of the tile.
+   */
   getTilePositionY(tileId: number): number {
     return Math.floor((tileId - 1) / this.columns) * this.tileHeight;
   }
 
+  /**
+   * The "getTileHeight" function returns the height of a tile.
+   * @returns The tile height.
+   */
   getTileHeight(): number {
     return this.tileHeight;
   }
 
+  /**
+   * The "getTileWidth" function returns the width of a tile.
+   * @returns The tile width.
+   */
   getTileWidth(): number {
     return this.tileWidth;
   }
 
+  /**
+   * The "getColumns" function returns the number of columns.
+   * @returns The number of columns.
+   */
   getColumns(): number {
     return this.columns;
   }
 
+  /**
+   * The "getTexture" function returns either an ImageBitmap or an HTMLImageElement.
+   * @returns The tileset texture.
+   */
   getTexture(): ImageBitmap | HTMLImageElement {
     return this.texture;
   }
 
+  /**
+   * The "getAnimation" function returns an array of numbers or undefined based on the given tileId.
+   * @param {number} tileId - The `tileId` parameter is a number that represents the ID of a tile.
+   * @returns an Array of numbers or undefined.
+   */
   getAnimation(tileId: number): Array<number> | undefined {
     return this.animations.get(tileId);
   }

@@ -2,12 +2,23 @@ import { gfx2Manager } from '../gfx2/gfx2_manager';
 import { Gfx2Drawable } from '../gfx2/gfx2_drawable';
 import { Gfx2Map } from './gfx2_map';
 
+/**
+ * The `Gfx2MapLayer` class is a subclass of `Gfx2Drawable` that responsible for updating and
+ * rendering a tile layer onto a canvas.
+ */
 class Gfx2MapLayer extends Gfx2Drawable {
   map: Gfx2Map;
   layerIndex: number;
   frameIndex: number;
   frameProgress: number;
 
+  /**
+   * The constructor.
+   * @param {Gfx2Map} map - The map or level in a game and contains information about the tiles, objects, and other elements present
+   * in the map.
+   * @param {number} layerIndex - The `layerIndex` parameter is used to determine which layer to render.
+   * manipulate.
+   */
   constructor(map: Gfx2Map, layerIndex: number) {
     super();
     this.map = map;
@@ -16,6 +27,10 @@ class Gfx2MapLayer extends Gfx2Drawable {
     this.frameProgress = 0;
   }
 
+  /**
+   * The "update" function.
+   * @param {number} ts - The `ts` parameter stands for "timestep".
+   */
   update(ts: number): void {
     const layer = this.map.getTileLayer(this.layerIndex);
     if (!layer) {
@@ -30,6 +45,9 @@ class Gfx2MapLayer extends Gfx2Drawable {
     this.frameProgress += ts;
   }
 
+  /**
+   * The "paint" function is rendering the tilemap layer.
+   */
   paint(): void {
     const layer = this.map.getTileLayer(this.layerIndex);
     if (!layer) {

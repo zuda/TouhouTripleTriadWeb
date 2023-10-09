@@ -14,6 +14,10 @@ interface JASAnimation {
   frameDuration: number;
 };
 
+/**
+ * The `UISprite` is a subclass of `UIWidget` that represents a sprite with animations in the
+ * user-interface system context.
+ */
 class UISprite extends UIWidget {
   animations: Array<JASAnimation>;
   currentAnimation: JASAnimation | null;
@@ -21,6 +25,10 @@ class UISprite extends UIWidget {
   isLooped: boolean;
   timeElapsed: number;
 
+  /**
+   * The constructor.
+   * @param options - An object containing optionnal className override.
+   */
   constructor(options: { className?: string } = {}) {
     super({
       className: options.className ?? 'UISprite'
@@ -33,6 +41,10 @@ class UISprite extends UIWidget {
     this.timeElapsed = 0;
   }
 
+  /**
+   * The "update" function.
+   * @param {number} ts - The `ts` parameter stands for "timestep".
+   */
   update(ts: number): void {
     if (!this.currentAnimation) {
       return;
@@ -60,6 +72,11 @@ class UISprite extends UIWidget {
     }
   }
 
+  /**
+   * The "loadTexture" function asynchronously loads an spritesheet image file.
+   * @param {string} imageFile - The `imageFile` parameter is a string that represents the file path or
+   * URL of the image that you want to load as a texture.
+   */
   async loadTexture(imageFile: string): Promise<void> {
     return new Promise(resolve => {
       const img = new Image();
@@ -71,6 +88,10 @@ class UISprite extends UIWidget {
     });
   }
 
+  /**
+   * The "loadFromFile" function asynchronously loads sprite data from a json file (jas).
+   * @param {string} path - The `path` parameter is the file path.
+   */
   async loadFromFile(path: string): Promise<void> {
     const response = await fetch(path);
     const json = await response.json();
@@ -95,6 +116,15 @@ class UISprite extends UIWidget {
     this.timeElapsed = 0;
   }
 
+  /**
+   * The "play" function is used to start playing a specific animation, with options for looping and
+   * preventing the same animation from being played again.
+   * @param {string} animationName - The name of the animation to be played.
+   * @param {boolean} [looped=false] - The `looped` parameter is a boolean that determines whether
+   * the animation should loop or not.
+   * @param {boolean} [preventSameAnimation=false] - The `preventSameAnimation` parameter is a boolean
+   * flag that determines whether the same animation should be prevented from playing again.
+   */
   play(animationName: string, isLooped: boolean = false, preventSameAnimation: boolean = false): void {
     if (preventSameAnimation && this.currentAnimation && animationName == this.currentAnimation.name) {
       return;
@@ -111,18 +141,35 @@ class UISprite extends UIWidget {
     this.timeElapsed = 0;
   }
 
+  /**
+   * The "getAnimations" function returns an array of animation descriptors.
+   * @returns An array of animation descriptors.
+   */
   getAnimations(): Array<JASAnimation> {
     return this.animations;
   }
 
+  /**
+   * The "setAnimations" function sets the animations property.
+   * @param animations - The `animations` parameter is an array of animation descriptors.
+   */
   setAnimations(animations: Array<JASAnimation>): void {
     this.animations = animations;
   }
 
+  /**
+   * The "getCurrentAnimation" function returns the current animation or null if there is no current
+   * animation.
+   * @returns The current animation or null.
+   */
   getCurrentAnimation(): JASAnimation | null {
     return this.currentAnimation;
   }
 
+  /**
+   * The "getCurrentAnimationFrameIndex" function returns the current animation frame index.
+   * @returns The current animation frame index.
+   */
   getCurrentAnimationFrameIndex(): number {
     return this.currentAnimationFrameIndex;
   }
