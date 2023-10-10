@@ -3,6 +3,7 @@ import { UIWidget } from '../../lib/ui/ui_widget';
 class UICardMenuItem extends UIWidget {
   name: string;
   quantity: number;
+  pristineQuantity: number;
 
   constructor(name: string, quantity: number) {
     super({
@@ -14,32 +15,27 @@ class UICardMenuItem extends UIWidget {
 
     this.name = name;
     this.quantity = quantity;
+    this.pristineQuantity = quantity;
   }
 
-  increaseQuantity(): void {
-    this.quantity++;
-    this.node.querySelector<HTMLElement>('.js-quantity')!.textContent = this.quantity.toString();
-  }
-
-  decreaseQuantity(): void {
+  add(): void {
     this.quantity--;
     this.node.querySelector<HTMLElement>('.js-quantity')!.textContent = this.quantity.toString();
-  }
-
-  flashAdded(): void {
     this.node.classList.remove('u-added');
     this.node.offsetWidth;
     this.node.classList.add('u-added');
   }
 
-  flashRemoved(): void {
+  remove(): void {
+    this.quantity++;
+    this.node.querySelector<HTMLElement>('.js-quantity')!.textContent = this.quantity.toString();
     this.node.classList.remove('u-removed');
     this.node.offsetWidth;
     this.node.classList.add('u-removed');
-  }
 
-  setAdded(added: boolean): void {
-    this.node.classList.toggle('u-added', added);
+    if (this.quantity == this.pristineQuantity) {
+      this.node.classList.remove('u-added');
+    }
   }
 
   setName(name: string): void {

@@ -94,9 +94,7 @@ class CardSelectionScreen extends Screen {
     uiCard.appendStyles('height:110px; margin-bottom:10px');
     this.uiPlayerHand.appendChild(uiCard.getNode());
 
-    item.decreaseQuantity();
-    item.flashAdded();
-
+    item.add();
     this.selectedCards.push(this.databaseCards[data.index]);
   }
 
@@ -109,13 +107,8 @@ class CardSelectionScreen extends Screen {
 
     this.uiPlayerHand.removeChild(selectedCardIndex);
 
-    item.increaseQuantity();
-    item.flashRemoved();
-
+    item.remove();
     this.selectedCards.splice(selectedCardIndex, 1);
-    if (this.selectedCards.findIndex(card => card.getName() == item.getName()) === -1) {
-      item.setAdded(false);
-    }
   }
 }
 
