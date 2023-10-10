@@ -70,6 +70,24 @@ class UIWidget {
   }
 
   /**
+   * The "appendChild" function appends a given HTML element as a child to the widget node.
+   * @param {HTMLElement} child - The `child` parameter is an instance of the `HTMLElement` class. It
+   * represents an HTML element that you want to append to the widget node.
+   */
+  appendChild(child: HTMLElement): void {
+    this.node.appendChild(child);
+  }
+
+  /**
+   * The "removeChild" function removes a child element from the widget node.
+   * @param {number} index - The index parameter is the position of the child element that you want to
+   * remove from the widget node.
+   */
+  removeChild(index: number): void {
+    this.node.removeChild(this.node.children[index]);
+  }
+
+  /**
    * The "appendStyles" function appends CSS styles to the `node` HTMLElement.
    * @param {string} styles - The `styles` parameter is a string that represents CSS styles that you want
    * to append to the `cssText` property of the `node` object.
@@ -150,7 +168,7 @@ class UIWidget {
    * The "isEnabled" function checks if widget is enabled or not.
    * @returns A boolean value indicating if the widget is enabled or not.
    */
-    isEnabled(): boolean {
+  isEnabled(): boolean {
     return !this.node.classList.contains('u-disabled');
   }
 

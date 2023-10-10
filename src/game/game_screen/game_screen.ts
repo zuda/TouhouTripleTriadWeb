@@ -59,6 +59,8 @@ class GameScreen extends Screen {
     const selectedHandCardNum = this.uiHands.getFocusedCardNum(this.gameState.getCurrentPlayerNum());
     this.gameState.placeHandCardOnBoard(this.gameState.getCurrentPlayerNum(), selectedHandCardNum, data.pos);
     this.gameState.performBattle(data.pos);
+
+    console.log(data.pos);
     this.gameState.changePlayer();
 
     uiManager.focus(this.uiHands);

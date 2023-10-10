@@ -263,6 +263,87 @@
   animation: blink 1.5s infinite;
 }
 
+.UICardMenuItem {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  justify-content: space-between;
+}
+
+.UICardMenuItem.u-added {
+  animation: add-card 0.5s 1;
+  background-color: rgb(21, 82, 7);
+}
+
+.UICardMenuItem.u-removed {
+  animation: remove-card 0.5s 1;
+}
+
+.UICardMenuItem.u-focused {
+  background-color: rgb(98, 211, 255);
+}
+
+@keyframes add-card {
+  0%, 50%, 100% {
+    background-color: rgb(12, 41, 49);
+  }
+  25%, 75% {
+    background-color: rgb(98, 255, 106)
+  }
+}
+
+@keyframes remove-card {
+  0%, 50%, 100% {
+    background-color: rgb(12, 41, 49);
+  }
+  25%, 75% {
+    background-color: rgb(255, 98, 98)
+  }
+}
+
+/*---------------------------------------------------------------------------------------------*/
+/* UI PLAYER HAND
+/*---------------------------------------------------------------------------------------------*/
+.UIPlayerHand {
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border: 10px solid;
+  border-image: url(../textures/ui_border.png) 3 fill;
+}
+
+/*---------------------------------------------------------------------------------------------*/
+/* UI CARD DESCRIPTION
+/*---------------------------------------------------------------------------------------------*/
+.UICardDescription {
+  padding-top: 10px;
+  border: 10px solid;
+  border-image: url(../textures/ui_border.png) 3 fill;
+}
+
+.UICardDescription .UICard {
+  width: 100px;
+  height: 130px;
+  margin: 0 auto;
+}
+
+.UICardDescription-card {
+  margin-bottom: 10px;
+}
+
+.UICardDescription-name {
+  text-align:center;
+  margin-bottom: 10px;
+}
+
+.UICardDescription-points {
+  text-align:center;
+}
+
 /*---------------------------------------------------------------------------------------------*/
 /* ANIMATIONS
 /*---------------------------------------------------------------------------------------------*/
@@ -273,4 +354,11 @@
   25%, 75% {
     opacity: 0.7;
   }
+}
+
+.CardSelectionScreen-title {
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
 }

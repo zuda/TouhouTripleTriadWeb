@@ -15,7 +15,7 @@ class UICard extends UIWidget {
       <img class="UICard-picture js-background"/>
       <img class="UICard-picture js-picture"/>
       <img class="UICard-picture js-border"/>
-      <div class="UICard-points">
+      <div class="UICard-points js-points">
         <div class="UICard-points-t js-top"></div>
         <div class="UICard-points-r js-right"></div>
         <div class="UICard-points-l js-left"></div>
@@ -48,6 +48,10 @@ class UICard extends UIWidget {
     else {
       this.card = null;
     }
+  }
+
+  setVisiblePoints(visible: boolean): void {
+    this.node.querySelector<HTMLElement>('.js-points')!.style.display = visible ? 'block' : 'none';
   }
 
   setPicture(filename: string): void {
