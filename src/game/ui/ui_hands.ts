@@ -1,7 +1,7 @@
 import { eventManager } from '../../lib/core/event_manager';
 import { UIWidget } from '../../lib/ui/ui_widget';
 // ---------------------------------------------------------------------------------------
-import { UICard } from './ui_card';
+import { UICard } from '../ui/ui_card';
 import { GameState, SIZE_HAND } from '../core/game_state';
 
 //
@@ -24,7 +24,7 @@ class UIHands extends UIWidget {
 
     this.gameState = gameState;
     this.uiCards = [[], []];
-    this.focusedCardNums = [SIZE_HAND - 1, SIZE_HAND - 1];
+    this.focusedCardNums = [0, 0];
     this.focusedPlayerNum = 0;
 
     eventManager.subscribe(gameState, 'E_HAND_CARD_ADDED', this, this.handleHandCardAdded);

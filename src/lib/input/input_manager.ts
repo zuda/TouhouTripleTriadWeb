@@ -53,6 +53,7 @@ class InputManager {
 
     this.registerAction('keyboard', 'Enter', 'OK');
     this.registerAction('keyboard', 'Escape', 'BACK');
+    this.registerAction('keyboard', 'Backspace', 'BACKSPACE');
     this.registerAction('keyboard', ' ', 'SELECT');
     this.registerAction('keyboard', 'ArrowLeft', 'LEFT');
     this.registerAction('keyboard', 'ArrowRight', 'RIGHT');
