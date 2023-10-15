@@ -13,7 +13,7 @@ class UICardMenu extends UIMenu {
       eventManager.emit(this, 'E_ITEM_ADDED', { id: widget.getId(), index: focusIndex });
       return;
     }
-    else if (actionId == 'BACK') {
+    else if (actionId == 'BACKSPACE') {
       const widget = this.widgets[focusIndex];
       eventManager.emit(this, 'E_ITEM_REMOVED', { id: widget.getId(), index: focusIndex });
       return;

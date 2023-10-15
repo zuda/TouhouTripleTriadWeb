@@ -33,7 +33,7 @@ class Card {
   }
 
   getOpposedValue(dir: Direction): number {
-    console.log('opposed', (dir + 2) % 4);
+    //console.log('opposed', (dir + 2) % 4);
     return this.points[(dir + 2) % 4] +  this.modifier[(dir + 2) % 4];
   }
 

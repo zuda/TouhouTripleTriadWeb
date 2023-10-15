@@ -2,7 +2,7 @@ import { eventManager } from '../../lib/core/event_manager';
 import { UIWidget } from '../../lib/ui/ui_widget';
 // ---------------------------------------------------------------------------------------
 import { UICard } from '../ui/ui_card';
-import { GameState, SIZE_HAND } from '../core/game_state';
+import { GameState } from '../core/game_state';
 
 //
 // @Events:
@@ -62,6 +62,9 @@ class UIHands extends UIWidget {
   }
 
   focusCard(cardNum: number): void {
+    console.log(this.focusedPlayerNum);
+    console.log(cardNum);
+    console.log(this.uiCards[this.focusedPlayerNum]);
     const card = this.uiCards[this.focusedPlayerNum][cardNum];
     if (!card) {
       throw new Error('UIHands::focusCard(): card not found !');

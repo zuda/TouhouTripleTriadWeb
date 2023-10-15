@@ -8,6 +8,8 @@ import { UIPlayerHand } from './ui_player_hand';
 import { UICard } from '../ui/ui_card';
 import { UICardDescription } from './ui_card_description';
 import { UICardMenuItem } from './ui_card_menu_item';
+import {screenManager} from "../../lib/screen/screen_manager";
+import {GameScreen} from "../game_screen/game_screen";
 
 class CardSelectionScreen extends Screen {
   uiCardMenuTitle: HTMLElement;
@@ -49,7 +51,7 @@ class CardSelectionScreen extends Screen {
     eventManager.subscribe(this.uiCardMenu, 'E_ITEM_FOCUSED', this, this.handleCardMenuItemFocused);
     eventManager.subscribe(this.uiCardMenu, 'E_ITEM_REMOVED', this, this.handleCardMenuRemoved);
     eventManager.subscribe(this.uiCardMenu, 'E_ITEM_ADDED', this, this.handleCardMenuItemAdded);
-
+    eventManager.subscribe(this.uiCardMenu, 'E_MAX_CARDS_SELECTED', this, this.handleMaxCardsSelected);
     uiManager.focus(this.uiCardMenu);
   }
 
@@ -80,10 +82,6 @@ class CardSelectionScreen extends Screen {
   }
 
   handleCardMenuItemAdded(data: any): void {
-    if (this.selectedCards.length >= this.maxCards) {
-      return;
-    }
-
     const item = this.uiCardMenu.getWidget(data.index) as UICardMenuItem;
     if (item.getQuantity() <= 0) {
       return;
@@ -96,6 +94,13 @@ class CardSelectionScreen extends Screen {
 
     item.add();
     this.selectedCards.push(this.databaseCards[data.index]);
+
+    if (this.selectedCards.length >= this.maxCards)
+    {
+      eventManager.emit(this.uiCardMenu, 'E_MAX_CARDS_SELECTED', {});
+      this.uiCardMenu.unfocus();
+      return;
+    }
   }
 
   handleCardMenuRemoved(data: any): void {
@@ -109,6 +114,17 @@ class CardSelectionScreen extends Screen {
 
     item.remove();
     this.selectedCards.splice(selectedCardIndex, 1);
+  }
+
+  handleMaxCardsSelected(data: any): void
+  {
+    console.log("maximum de cartes à sélectionner atteint !");
+    screenManager.requestSetScreen(new GameScreen());
+  }
+
+  getCardsSelected(): Array<Card>
+  {
+    return this.selectedCards;
   }
 }
 
