@@ -134,19 +134,19 @@ class GameState {
     switch (dir) {
       case Direction.W:
         if (this.vWalls[i][j]) return null;
-        else neighbour[0] = (i == 0) ? SIZE_BOARD - 1 : i - 1;
+        else neighbour[1] = (j == 0) ? SIZE_BOARD - 1 : j - 1;
         break;
       case Direction.N:
         if (this.hWalls[i][j]) return null;
-        else neighbour[1] = (j == 0) ? SIZE_BOARD - 1 : j - 1;
+        else neighbour[0] = (i == 0) ? SIZE_BOARD - 1 : i - 1;
         break;
       case Direction.E:
         if (this.vWalls[i][j]) return null;
-        else neighbour[0] = (i == SIZE_BOARD - 1) ? 0 : i + 1;
+        else neighbour[1] = (j == SIZE_BOARD - 1) ? 0 : j + 1;
         break;
       case Direction.S:
         if (this.hWalls[i][j]) return null;
-        else neighbour[1] = (j == SIZE_BOARD - 1) ? 0 : j + 1;
+        else neighbour[0] = (i == SIZE_BOARD - 1) ? 0 : i + 1;
         break;
     }
 

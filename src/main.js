@@ -21,4 +21,4 @@ class GameManager {
 
 export const gameManager = new GameManager();
 gameManager.run(0);
-screenManager.requestSetScreen(new CardSelectionScreen());
+screenManager.requestSetScreen(new GameScreen());

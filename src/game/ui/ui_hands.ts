@@ -62,9 +62,6 @@ class UIHands extends UIWidget {
   }
 
   focusCard(cardNum: number): void {
-    console.log(this.focusedPlayerNum);
-    console.log(cardNum);
-    console.log(this.uiCards[this.focusedPlayerNum]);
     const card = this.uiCards[this.focusedPlayerNum][cardNum];
     if (!card) {
       throw new Error('UIHands::focusCard(): card not found !');

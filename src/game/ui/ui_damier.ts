@@ -22,20 +22,20 @@ class UIDamier extends UIWidget {
       className: 'UIDamier',
       template: `
       <div class="UIDamier-cell js-0-0"></div>
-      <div class="UIDamier-cell js-1-0"></div>
-      <div class="UIDamier-cell js-2-0"></div>
-      <div class="UIDamier-cell js-3-0"></div>
       <div class="UIDamier-cell js-0-1"></div>
-      <div class="UIDamier-cell js-1-1"></div>
-      <div class="UIDamier-cell js-2-1"></div>
-      <div class="UIDamier-cell js-3-1"></div>
       <div class="UIDamier-cell js-0-2"></div>
-      <div class="UIDamier-cell js-1-2"></div>
-      <div class="UIDamier-cell js-2-2"></div>
-      <div class="UIDamier-cell js-3-2"></div>
       <div class="UIDamier-cell js-0-3"></div>
+      <div class="UIDamier-cell js-1-0"></div>
+      <div class="UIDamier-cell js-1-1"></div>
+      <div class="UIDamier-cell js-1-2"></div>
       <div class="UIDamier-cell js-1-3"></div>
+      <div class="UIDamier-cell js-2-0"></div>
+      <div class="UIDamier-cell js-2-1"></div>
+      <div class="UIDamier-cell js-2-2"></div>
       <div class="UIDamier-cell js-2-3"></div>
+      <div class="UIDamier-cell js-3-0"></div>
+      <div class="UIDamier-cell js-3-1"></div>
+      <div class="UIDamier-cell js-3-2"></div>
       <div class="UIDamier-cell js-3-3"></div>`
     });
 
@@ -85,20 +85,20 @@ class UIDamier extends UIWidget {
 
   onAction(actionId: string): void {
     if (actionId == 'UP') {
-      let next = (this.focusedCellPos[1] == 0) ? SIZE_BOARD - 1 : this.focusedCellPos[1] - 1;
-      this.focusCell([this.focusedCellPos[0], next]);
-    }
-    else if (actionId == 'RIGHT') {
-      let next = (this.focusedCellPos[0] == SIZE_BOARD - 1) ? 0 : this.focusedCellPos[0] + 1;
+      let next = (this.focusedCellPos[0] == 0) ? SIZE_BOARD - 1 : this.focusedCellPos[0] - 1;
       this.focusCell([next, this.focusedCellPos[1]]);
     }
-    else if (actionId == 'DOWN') {
+    else if (actionId == 'RIGHT') {
       let next = (this.focusedCellPos[1] == SIZE_BOARD - 1) ? 0 : this.focusedCellPos[1] + 1;
       this.focusCell([this.focusedCellPos[0], next]);
     }
-    else if (actionId == 'LEFT') {
-      let next = (this.focusedCellPos[0] == 0) ? SIZE_BOARD - 1 : this.focusedCellPos[0] - 1;
+    else if (actionId == 'DOWN') {
+      let next = (this.focusedCellPos[0] == SIZE_BOARD - 1) ? 0 : this.focusedCellPos[0] + 1;
       this.focusCell([next, this.focusedCellPos[1]]);
+    }
+    else if (actionId == 'LEFT') {
+      let next = (this.focusedCellPos[1] == 0) ? SIZE_BOARD - 1 : this.focusedCellPos[1] - 1;
+      this.focusCell([this.focusedCellPos[0], next]);
     }
     else if (actionId == 'OK') {
       const card = this.uiCards[this.focusedCellPos[0]][this.focusedCellPos[1]];
@@ -139,7 +139,7 @@ class UIDamier extends UIWidget {
         // on créé un visuel de mur vertical supplémentaire après la derniere colonne
         if (j == 0) {
           const uiWall = new UIWall(WallPosition.VR);
-          const cell = this.node.querySelector<HTMLElement>(`.js-${SIZE_BOARD - 1}-${j}`)!;
+          const cell = this.node.querySelector<HTMLElement>(`.js-${i}-${SIZE_BOARD - 1}`)!;
           cell.appendChild(uiWall.getNode());
           uiWalls[i][j] = uiWall;
         }
@@ -168,7 +168,7 @@ class UIDamier extends UIWidget {
         // on créé un visuel de mur horizontal supplémentaire après la derniere ligne
         if (i == 0) {
           const uiWall = new UIWall(WallPosition.HB);
-          const cell = this.node.querySelector<HTMLElement>(`.js-${i}-${SIZE_BOARD - 1}`)!;
+          const cell = this.node.querySelector<HTMLElement>(`.js-${SIZE_BOARD - 1}-${j}`)!;
           cell.appendChild(uiWall.getNode());
           uiWalls[i][j] = uiWall;
         }
